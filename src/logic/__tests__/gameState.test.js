@@ -160,6 +160,21 @@ test('decisions change daily resources, equipment, crew health, and continuity',
   assert.equal(repaired.equipment.find((item) => item.id === 'water-recycler').condition, 95);
 });
 
+test('emergency power output scales with the backup generator condition', () => {
+  const reliableGenerator = createInitialGameState();
+  reliableGenerator.activeEvent = null;
+  const reliable = advanceDay(selectDecision(reliableGenerator, 'emergency_power'));
+
+  const wornGenerator = createInitialGameState();
+  wornGenerator.activeEvent = null;
+  wornGenerator.equipment.find((item) => item.id === 'backup-generator').condition = 40;
+  const worn = advanceDay(selectDecision(wornGenerator, 'emergency_power'));
+
+  assert.ok(reliable.resources.power.current > worn.resources.power.current);
+  assert.equal(reliable.resources.power.current, 85.7);
+  assert.equal(worn.resources.power.current, 78.9);
+});
+
 test('unaffordable and unknown decisions are rejected without mutating state', () => {
   const state = createInitialGameState();
   state.resources.power.current = 7;

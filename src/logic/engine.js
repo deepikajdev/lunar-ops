@@ -71,15 +71,21 @@ export function advanceDay(state) {
     next.resources[id].current = clamp(next.resources[id].current - cost, 0, next.resources[id].max);
   }
 
-  const resourceDeltas = combineMapValues(decision.resourceDeltas, event?.effects.resourceDeltas, mitigation.resourceDeltas);
-  for (const [id, delta] of Object.entries(resourceDeltas)) {
-    if (next.resources[id]) next.resources[id].current = clamp(next.resources[id].current + delta, 0, next.resources[id].max);
-  }
-
   const equipmentDeltas = combineMapValues(decision.equipmentDeltas, event?.effects.equipmentDeltas, mitigation.equipmentDeltas);
   for (const [id, delta] of Object.entries(equipmentDeltas)) {
     const equipment = next.equipment.find((item) => item.id === id);
     if (equipment) equipment.condition = clamp(round1(equipment.condition + delta), 0, 100);
+  }
+
+  const conditionScaledDecisionDeltas = { ...decision.resourceDeltas };
+  for (const [resourceId, equipmentId] of Object.entries(decision.resourceDeltaConditionFactors ?? {})) {
+    if (conditionScaledDecisionDeltas[resourceId] !== undefined) {
+      conditionScaledDecisionDeltas[resourceId] *= getEquipmentCondition(next, equipmentId) / 100;
+    }
+  }
+  const resourceDeltas = combineMapValues(conditionScaledDecisionDeltas, event?.effects.resourceDeltas, mitigation.resourceDeltas);
+  for (const [id, delta] of Object.entries(resourceDeltas)) {
+    if (next.resources[id]) next.resources[id].current = clamp(next.resources[id].current + delta, 0, next.resources[id].max);
   }
 
   adjustCrewHealth(next, decision.crewHealthDelta + (event?.effects.crewHealthDelta ?? 0) + (mitigation.crewHealthDelta ?? 0));
