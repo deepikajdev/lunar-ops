@@ -34,7 +34,7 @@ test('advances one day using configured consumption and production for every res
   assert.equal(next.day, 2);
   assert.deepEqual(
     Object.fromEntries(Object.entries(next.resources).map(([id, item]) => [id, item.current])),
-    { oxygen: 86, water: 84, food: 85, power: 75 },
+    { oxygen: 85.8, water: 83.4, food: 85, power: 73.8 },
   );
   assert.equal(next.history.length, 1);
   assert.equal(next.history[0].day, 1);
@@ -63,4 +63,36 @@ test('does not advance an inactive mission or move beyond the final mission day'
   assert.equal(next.day, 10);
   assert.equal(next.history.length, 1);
   assert.equal(advanceDay(next), next);
+});
+
+test('recycler and solar equipment condition changes daily production', () => {
+  const state = createInitialGameState();
+  state.equipment.find((item) => item.id === 'oxygen-recycler').condition = 0;
+  state.equipment.find((item) => item.id === 'solar-array').condition = 0;
+  const next = advanceDay(state);
+
+  assert.equal(next.resources.oxygen.current, 82);
+  assert.equal(next.resources.power.current, 44);
+});
+
+test('resource shortage and blackout consequences affect crew and equipment safely', () => {
+  const state = createInitialGameState();
+  state.resources.water.current = 1;
+  state.resources.power.current = 0;
+  state.equipment.find((item) => item.id === 'solar-array').condition = 0;
+
+  const next = advanceDay(state);
+  assert.equal(next.resources.water.current, 0);
+  assert.deepEqual(next.crew.map((person) => person.health), [84, 80, 82, 81]);
+  assert.equal(next.continuity, 92);
+  assert.equal(next.equipment.find((item) => item.id === 'habitat-systems').condition, 84);
+  assert.ok(next.crew.every((person) => person.health >= 0));
+});
+
+test('equipment wears down once per day after applying its effect on generation', () => {
+  const state = createInitialGameState();
+  const next = advanceDay(state);
+  assert.equal(next.equipment.find((item) => item.id === 'solar-array').condition, 95);
+  assert.equal(next.equipment.find((item) => item.id === 'oxygen-recycler').condition, 93);
+  assert.equal(state.equipment.find((item) => item.id === 'solar-array').condition, 96);
 });
