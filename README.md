@@ -55,17 +55,21 @@ These rules are designed for playability, not for estimating real lunar survival
 src/
   components/           Reusable dashboard components
     simulation/         Survival screen, panels, decisions, and result
-  data/                 Phase 1 dashboard demo content
+  data/                 Phase 1 demo content and educational reference cards
   logic/                Game balance, events, decisions, engine, scoring
     __tests__/           Simulation engine tests
-  nasa/                  Shared NASA schemas, normalization, cache and provenance
-  styles/                Dashboard and simulation stylesheets
+  nasa/                  NASA schemas, normalization, cache, mappings and provenance
+  styles/                Dashboard, simulation, and NASA intelligence stylesheets
   App.jsx                App navigation and React state wiring
   main.jsx               Browser entry point
 server/
   index.js               Loopback-only NASA API boundary
   nasa/                  Server-only NASA adapters and transport
     __tests__/            API boundary and transport tests
+docs/
+  PHASE3_M0_REPORT.md     NASA endpoint verification and captured-sample notes
+  PHASE3_M2_M9.md         NASA data integration, scientific limits, and validation
+tests/fixtures/nasa/      Genuine M0 NASA responses and retrieval sidecars
 ```
 
 ## Technology
@@ -92,4 +96,12 @@ Do not use `VITE_*` names, commit `.env` files, or put credentials in public, us
 
 The server routes are `GET /api/nasa/donki/{cme,gst,sep,ips}`, the explicitly unverified `GET /api/nasa/donki/flr`, `GET /api/nasa/images/search?q=...`, and image `GET /api/nasa/images/{asset,metadata}/{nasa_id}`. Vite proxies same-origin `/api` requests to the loopback service; direct browser requests to NASA are not used. For live access, run `npm run api` and `npm run dev` in separate terminals. Without the API service, the application can use its bundled archives and offline cache.
 
-DONKI CME, GST, SEP and IPS payloads are validated against genuine M0 samples. FLR remains explicitly schema-unverified. NASA Images search, asset, and metadata responses have separate validators. Transport failures use bounded retries only for network errors and selected 5xx responses (two retries by default, a hard cap of five); 429 returns a normalized rate-limit error and `Retry-After` rather than retrying automatically. Request provenance distinguishes `NASA_LIVE`, `NASA_ARCHIVE`, `DERIVED`, and `SIMULATED`. The browser repository uses memory and IndexedDB caches, a 15-minute configurable TTL, stale-while-revalidate, and the genuine bundled M0 snapshots for REPLAY/OFFLINE operation. This foundation does not connect NASA observations to simulation outcomes.
+DONKI CME, GST, SEP and IPS payloads are validated against genuine M0 samples. FLR remains explicitly schema-unverified. NASA Images search, asset, and metadata responses have separate validators. Transport failures use bounded retries only for network errors and selected 5xx responses (two retries by default, a hard cap of five); 429 returns a normalized rate-limit error and `Retry-After` rather than retrying automatically. Request provenance distinguishes `NASA_LIVE`, `NASA_ARCHIVE`, `DERIVED`, and `SIMULATED`. The browser repository uses memory and IndexedDB caches, a 15-minute configurable TTL, stale-while-revalidate, and the genuine bundled M0 snapshots for REPLAY/OFFLINE operation.
+
+## NASA intelligence (Phase 3 M2–M9)
+
+Open **NASA Intelligence** in the sidebar to view the event timeline, inspect normalized NASA records and linked event IDs, see GST Kp values, choose LIVE/REPLAY/OFFLINE mode, browse the curated NASA Images gallery, or read the source-linked science cards. REPLAY is selected by default. Live DONKI access requires the server API boundary and a registered key; without it, the page shows available cache/archive content and labels the fallback. Start the app in two terminals when live data is configured: `npm run api` and `npm run dev`.
+
+The NASA observation-to-game mapping is deliberately informational. SEP may prompt a radiation and shelter discussion, but no dose, shielding benefit, crew-health effect, resource change, or equipment damage is calculated. CME, GST and IPS observations are narrative context. Kp is Earth geomagnetic context; the sampled DONKI GST records identify NOAA as the Kp source, separately attributed in the interface. Three replay briefings use records selected from the genuine May 2024 M0 snapshots. Adding a briefing to the survival simulator stores a sanitized `GameSignal` and cannot alter the game model. No FLR records are normalized or mapped.
+
+See [`docs/PHASE3_M2_M9.md`](docs/PHASE3_M2_M9.md) for the architecture, mapping classifications, archive IDs, and limits. `npm test` covers the NASA adapters, error paths, caches, archive modes, provenance, conservative mappings, three verified replay records, gallery curation and Phase 2 regressions. The NASA Intelligence view uses responsive layouts and keyboard-operable native controls; visual behavior still requires browser review at deployment breakpoints.

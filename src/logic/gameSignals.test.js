@@ -34,6 +34,8 @@ test('rejects raw records, effectful annotations, and signals after the mission 
   const state = createInitialGameState();
   const signal = NASA_REPLAY_SCENARIOS[0].signal;
   assert.equal(simulationReducer(state, { type: 'receive-game-signal', signal: { ...signal, sourceRecord: { private: true } } }), state);
+  assert.equal(simulationReducer(state, { type: 'receive-game-signal', signal: { ...signal, rawRecord: { private: true } } }), state);
+  assert.equal(simulationReducer(state, { type: 'receive-game-signal', signal: { ...signal, sourceUrl: 'javascript:alert(1)' } }), state);
   assert.equal(simulationReducer(state, { type: 'receive-game-signal', signal: { ...signal, simulationEffects: { ...signal.simulationEffects, crewHealth: -8 } } }), state);
   const ended = { ...state, status: 'failed' };
   assert.equal(simulationReducer(ended, { type: 'receive-game-signal', signal }), ended);
