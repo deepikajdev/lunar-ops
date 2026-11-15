@@ -3,6 +3,7 @@ import { getEventForDay } from './events.js';
 import { getDecisionById } from './decisions.js';
 import { createInitialGameState } from './gameState.js';
 import { calculateMissionScore } from './scoring.js';
+import { receiveGameSignal } from './gameSignals.js';
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -161,6 +162,8 @@ export function simulationReducer(state, action) {
       return advanceDay(state);
     case 'restart':
       return restartGame(action.seed ?? state.seed);
+    case 'receive-game-signal':
+      return receiveGameSignal(state, action.signal);
     default:
       return state;
   }

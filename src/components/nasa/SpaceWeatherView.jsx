@@ -3,6 +3,7 @@ import { Activity, ArrowUpRight, Clock3, Database, Radio, RefreshCw, Satellite, 
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { createEventRepository } from '../../nasa/repository.js';
 import { mapEventToGameSignal } from '../../nasa/mappingRules.js';
+import { NASA_REPLAY_SCENARIOS } from '../../nasa/replayScenarios.js';
 import '../../styles/nasa.css';
 
 const kinds = ['cme', 'gst', 'sep', 'ips'];
@@ -23,7 +24,7 @@ function eventSubtitle(event) {
   return detail ? String(detail) : labels[event.eventType] || event.eventType;
 }
 
-export function SpaceWeatherView() {
+export function SpaceWeatherView({ onSendSignal = () => {} }) {
   const [mode, setMode] = useState('REPLAY');
   const [events, setEvents] = useState([]);
   const [results, setResults] = useState([]);
@@ -97,6 +98,7 @@ export function SpaceWeatherView() {
         </> : <p className="nasa-empty">Select an observation to inspect its source details.</p>}
       </aside>
     </div>
+    <section className="nasa-scenarios" aria-labelledby="scenario-title"><div className="panel-heading"><div><p className="section-kicker">VERIFIED NASA ARCHIVE · MAY 2024</p><h2 id="scenario-title">Replay a context briefing</h2></div><span className="nasa-count">3 ARCHIVED EVENTS</span></div><p>Choose a verified archived observation to attach a source-linked briefing to the survival simulator. The observation will not change game resources, health, or equipment.</p><div className="scenario-grid">{NASA_REPLAY_SCENARIOS.map((scenario) => <article className="panel scenario-card" key={scenario.id}><span>{scenario.signal.classification} CONTEXT</span><h3>{scenario.title}</h3><p>{scenario.description}</p><small>{scenario.eventId}</small><button type="button" onClick={() => onSendSignal(scenario.signal)}>Send context to Survival sim</button></article>)}</div></section>
     <footer className="nasa-attribution">Data source: <a href="https://api.nasa.gov/" target="_blank" rel="noreferrer">NASA Open APIs · DONKI</a>. NASA does not endorse LUNAR OPS. Space weather observations are not direct measurements of outpost equipment conditions.</footer>
   </div>;
 }

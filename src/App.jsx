@@ -22,7 +22,7 @@ function App() {
     <div className="app-shell">
       <Sidebar activeItem={activeNav} onNavigate={setActiveNav} />
       <main className="main-content">
-        {activeNav === 'Survival sim' ? <SimulationView state={simulation} dispatch={dispatch} /> : activeNav === 'NASA Intelligence' ? <Suspense fallback={<div className="nasa-loading" role="status">Loading NASA intelligence view…</div>}><SpaceWeatherView /></Suspense> : <>
+        {activeNav === 'Survival sim' ? <SimulationView state={simulation} dispatch={dispatch} /> : activeNav === 'NASA Intelligence' ? <Suspense fallback={<div className="nasa-loading" role="status">Loading NASA intelligence view…</div>}><SpaceWeatherView onSendSignal={(signal) => { dispatch({ type: 'receive-game-signal', signal }); setActiveNav('Survival sim'); }} /></Suspense> : <>
         <MissionOverview mission={mission} />
         <motion.section className="mission-hero panel" aria-label="Lunar outpost mission overview" variants={appear} initial="hidden" animate="visible">
           <div className="hero-copy">

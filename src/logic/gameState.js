@@ -17,6 +17,7 @@ export function createInitialGameState(seed = GAME_CONFIG.defaultSeed) {
     selectedDecisionId: 'balanced_ops',
     activeEvent: getEventForDay(seed, 1),
     history: [],
+    spaceWeatherContext: [],
     emergencyResponses: 0,
     eventCount: getEventForDay(seed, 1) ? 1 : 0,
     continuity: 100,

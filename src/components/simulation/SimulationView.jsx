@@ -7,6 +7,7 @@ import { EquipmentStatusPanel } from './EquipmentStatusPanel.jsx';
 import { MissionLogPanel } from './MissionLogPanel.jsx';
 import { MissionResult } from './MissionResult.jsx';
 import { SimulationResourceGrid } from './SimulationResourceGrid.jsx';
+import { SpaceWeatherContextPanel } from './SpaceWeatherContextPanel.jsx';
 import '../../styles/simulation.css';
 
 export function SimulationView({ state, dispatch }) {
@@ -32,6 +33,8 @@ export function SimulationView({ state, dispatch }) {
         <div><span className="status-strip-icon amber"><Activity size={15} /></span><span><small>RESOURCE WATCH</small><strong>{warnings ? `${warnings} WARNING${warnings > 1 ? 'S' : ''}` : 'NOMINAL'}</strong></span></div>
         <div><span className="status-strip-icon blue"><RadioTower size={15} /></span><span><small>MISSION LINK</small><strong>{state.continuity}% CONTINUITY</strong></span></div>
       </section>
+
+      <SpaceWeatherContextPanel signals={state.spaceWeatherContext} />
 
       <section className="sim-resource-section" aria-labelledby="sim-resource-heading">
         <div className="sim-section-heading"><div><p className="section-kicker">LIFE SUPPORT & UTILITIES</p><h2 id="sim-resource-heading">Outpost reserves</h2></div><span className="sim-data-tag"><i /> ILLUSTRATIVE GAME VALUES</span></div>
