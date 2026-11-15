@@ -108,6 +108,21 @@ test('serves stale IndexedDB data immediately and revalidates in the background'
   assert.equal(refreshed, true);
 });
 
+test('coalesces simultaneous stale refreshes for one event category', async () => {
+  let currentTime = 1_000;
+  let calls = 0;
+  const repository = createEventRepository({
+    apiClient: { donki: async () => { calls += 1; await new Promise((resolve) => setTimeout(resolve, 1)); return liveEmptyResponse(); } },
+    memoryCache: new MapCache(), persistentCache: new MapCache(), ttlMs: 10, now: () => currentTime,
+  });
+  await repository.getEvents('gst');
+  currentTime += 20;
+  const [first, second] = await Promise.all([repository.getEvents('gst'), repository.getEvents('gst')]);
+  assert.equal(calls, 2);
+  await Promise.all([first.refreshPromise, second.refreshPromise]);
+  assert.equal(calls, 2);
+});
+
 test('persists 429 cooldown and avoids repeated API calls across repository instances', async () => {
   let currentTime = 100;
   let calls = 0;

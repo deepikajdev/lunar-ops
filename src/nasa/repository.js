@@ -63,6 +63,7 @@ export function createEventRepository({
   onUpdate = () => {},
 } = {}) {
   const rateLimits = new Map();
+  const inFlight = new Map();
 
   const cacheKey = (kind) => `${CACHE_NAMESPACE}:events:${kind}`;
   const rateKey = (kind) => `${CACHE_NAMESPACE}:rate:${kind}`;
@@ -186,10 +187,14 @@ export function createEventRepository({
   }
 
   async function refresh(kind, options = {}) {
-    const entry = await fetchLive(kind, options.signal);
-    const result = eventResult(entry, { mode: 'LIVE', requestedMode: 'LIVE', delivery: 'NASA_LIVE', stale: false });
-    onUpdate(kind, result);
-    return result;
+    if (inFlight.has(kind)) return inFlight.get(kind);
+    const pending = fetchLive(kind, options.signal).then((entry) => {
+      const result = eventResult(entry, { mode: 'LIVE', requestedMode: 'LIVE', delivery: 'NASA_LIVE', stale: false });
+      onUpdate(kind, result);
+      return result;
+    }).finally(() => inFlight.delete(kind));
+    inFlight.set(kind, pending);
+    return pending;
   }
 
   async function getEvents(kind, { mode = 'LIVE', forceRefresh = false, signal } = {}) {
