@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Activity, ArrowUpRight, Clock3, Database, Radio, RefreshCw, Satellite, ShieldAlert } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { createEventRepository } from '../../nasa/repository.js';
+import { mapEventToGameSignal } from '../../nasa/mappingRules.js';
 import '../../styles/nasa.css';
 
 const kinds = ['cme', 'gst', 'sep', 'ips'];
@@ -44,6 +45,7 @@ export function SpaceWeatherView() {
 
   useEffect(() => { load(mode); }, [mode, load]);
   const selected = events.find((event) => event.id === selectedId) || null;
+  const signal = selected ? mapEventToGameSignal(selected) : null;
   const kpData = useMemo(() => (selected?.eventType === 'GST' ? selected.magnitude.filter((item) => item.kind === 'KP_INDEX') : [])
     .map((item) => ({ time: item.observedAt.slice(11, 16), kp: item.value })), [selected]);
   const modeResult = results.find((result) => result.mode === mode) || results[0];
@@ -89,6 +91,7 @@ export function SpaceWeatherView() {
         {selected ? <>
           <div className="detail-type"><span>{selected.eventType}</span><small>{labels[selected.eventType] || 'NASA DONKI observation'}</small></div>
           <dl className="detail-fields"><div><dt>OBSERVATION TIME</dt><dd>{dateLabel(selected.observedAt)}</dd></div><div><dt>SUBMITTED</dt><dd>{dateLabel(selected.submittedAt)}</dd></div><div><dt>LOCATION / REGION</dt><dd>{eventSubtitle(selected)}</dd></div><div><dt>VERSION</dt><dd>{selected.versionId ?? 'Not supplied'}</dd></div><div><dt>LINKED EVENTS</dt><dd>{selected.linkedEventIds?.length ? selected.linkedEventIds.join(', ') : 'None listed in this record'}</dd></div></dl>
+          {signal && <div className="signal-context"><div><span>GAME CONTEXT · {signal.classification}</span><strong>{signal.title}</strong></div><p>{signal.message}</p><small>{signal.effects}</small><a href={signal.educationalSourceUrl} target="_blank" rel="noreferrer">Scientific context <ArrowUpRight size={12} /></a></div>}
           {kpData.length > 0 && <div className="kp-chart"><p className="section-kicker">SOURCE Kp INDEX · EARTH GEOMAGNETIC CONTEXT</p><div className="kp-chart-frame"><ResponsiveContainer width="100%" height="100%"><LineChart data={kpData} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}><CartesianGrid stroke="rgba(177,194,224,.09)" vertical={false} /><XAxis dataKey="time" tick={{ fill: '#728198', fontSize: 9 }} axisLine={false} tickLine={false} /><YAxis domain={[0, 9]} ticks={[0, 3, 6, 9]} tick={{ fill: '#728198', fontSize: 9 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ background: '#111927', border: '1px solid #28364a', borderRadius: 6, color: '#e7ebf4' }} /><Line type="monotone" dataKey="kp" name="Kp" stroke="#82d9e8" strokeWidth={2} dot={{ r: 2, fill: '#82d9e8' }} /></LineChart></ResponsiveContainer></div><small>Kp is a source measurement associated with Earth geomagnetic activity, not a lunar surface measurement.</small></div>}
           <div className="detail-provenance"><span>{provenanceLabel(selected)}</span><small>Retrieved {dateLabel(selected.retrievedAt || selected.provenance?.archivedAt)}</small><a href={selected.sourceUrl} target="_blank" rel="noreferrer">Open NASA source <ArrowUpRight size={13} /></a></div>
         </> : <p className="nasa-empty">Select an observation to inspect its source details.</p>}
