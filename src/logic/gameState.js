@@ -1,4 +1,5 @@
 import { CREW_TEMPLATE, EQUIPMENT_TEMPLATE, GAME_CONFIG } from './gameConfig.js';
+import { getEventForDay } from './events.js';
 
 export function createInitialGameState(seed = GAME_CONFIG.defaultSeed) {
   const resources = Object.fromEntries(
@@ -14,10 +15,10 @@ export function createInitialGameState(seed = GAME_CONFIG.defaultSeed) {
     crew: CREW_TEMPLATE.map((person) => ({ ...person, alive: true })),
     equipment: EQUIPMENT_TEMPLATE.map((item) => ({ ...item })),
     selectedDecisionId: 'balanced_ops',
-    activeEvent: null,
+    activeEvent: getEventForDay(seed, 1),
     history: [],
     emergencyResponses: 0,
-    eventCount: 0,
+    eventCount: getEventForDay(seed, 1) ? 1 : 0,
     continuity: 100,
     score: null,
   };

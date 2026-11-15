@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from './gameConfig.js';
+import { getEventForDay } from './events.js';
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -79,9 +80,11 @@ export function advanceDay(state) {
   });
 
   if (next.day < next.maxDays) {
+    const previousEventId = next.activeEvent?.id ?? null;
     next.day += 1;
     next.selectedDecisionId = 'balanced_ops';
-    next.activeEvent = null;
+    next.activeEvent = getEventForDay(next.seed, next.day, previousEventId);
+    if (next.activeEvent) next.eventCount += 1;
   }
 
   return next;

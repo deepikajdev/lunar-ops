@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createInitialGameState } from '../gameState.js';
 import { GAME_CONFIG } from '../gameConfig.js';
 import { advanceDay } from '../engine.js';
+import { EVENT_CATALOG, getEventForDay } from '../events.js';
 
 test('initializes a ten-day mission with independent game-balance resources', () => {
   const state = createInitialGameState();
@@ -95,4 +96,37 @@ test('equipment wears down once per day after applying its effect on generation'
   assert.equal(next.equipment.find((item) => item.id === 'solar-array').condition, 95);
   assert.equal(next.equipment.find((item) => item.id === 'oxygen-recycler').condition, 93);
   assert.equal(state.equipment.find((item) => item.id === 'solar-array').condition, 96);
+});
+
+test('event catalog includes the required configurable and actionable event types', () => {
+  assert.deepEqual(new Set(EVENT_CATALOG.map((event) => event.id)), new Set([
+    'solar-storm-warning', 'power-malfunction', 'water-recycling-failure', 'oxygen-leak',
+    'equipment-overheating', 'communication-disruption', 'solar-panel-dust',
+  ]));
+  assert.ok(EVENT_CATALOG.every((event) => event.description && event.severity && event.trigger.probability > 0 && Object.keys(event.responses).length > 0));
+});
+
+test('seeded event selection is reproducible and never stacks multiple events on a day', () => {
+  const firstRun = Array.from({ length: 10 }, (_, index) => getEventForDay(718, index + 1)?.id ?? null);
+  const secondRun = Array.from({ length: 10 }, (_, index) => getEventForDay(718, index + 1)?.id ?? null);
+  assert.deepEqual(firstRun, secondRun);
+  assert.ok(firstRun.some(Boolean));
+
+  let previous = null;
+  const sequential = Array.from({ length: 10 }, (_, index) => {
+    const event = getEventForDay(718, index + 1, previous);
+    previous = event?.id ?? previous;
+    return event?.id ?? null;
+  });
+  for (let i = 1; i < sequential.length; i += 1) {
+    if (sequential[i] && sequential[i - 1]) assert.notEqual(sequential[i], sequential[i - 1]);
+  }
+});
+
+test('initialization and day progression assign deterministic events to each day', () => {
+  const state = createInitialGameState(718);
+  const next = advanceDay(state);
+  assert.equal(state.activeEvent?.id ?? null, getEventForDay(718, 1)?.id ?? null);
+  assert.equal(next.activeEvent?.id ?? null, getEventForDay(718, 2, state.activeEvent?.id ?? null)?.id ?? null);
+  assert.equal(next.eventCount, state.eventCount + (next.activeEvent ? 1 : 0));
 });
