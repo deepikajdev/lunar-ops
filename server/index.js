@@ -1,7 +1,7 @@
 import { createServer as createHttpServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { createNasaAdapters } from './nasa/adapters.js';
-import { NasaApiError } from './nasa/errors.js';
+import { NasaApiError } from '../src/nasa/errors.js';
 
 function json(response, status, payload, extraHeaders = {}) {
   response.writeHead(status, {

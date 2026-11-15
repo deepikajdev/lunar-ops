@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { validateDonkiPayload, validateImagePayload, parseJsonResponse } from '../schemas.js';
-import { createProvenance, PROVENANCE_TYPES } from '../provenance.js';
+import { validateDonkiPayload, validateImagePayload, parseJsonResponse } from '../../../src/nasa/schemas.js';
+import { createProvenance, PROVENANCE_TYPES } from '../../../src/nasa/provenance.js';
 
 const fixtures = new URL('../../../tests/fixtures/nasa/', import.meta.url);
 const loadFixture = async (name) => JSON.parse(await readFile(fileURLToPath(new URL(name, fixtures)), 'utf8'));

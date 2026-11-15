@@ -1,5 +1,5 @@
-import { NasaApiError, normalizeHttpError } from './errors.js';
-import { parseJsonResponse } from './schemas.js';
+import { NasaApiError, normalizeHttpError } from '../../src/nasa/errors.js';
+import { parseJsonResponse } from '../../src/nasa/schemas.js';
 
 const RETRYABLE_STATUSES = new Set([500, 502, 503, 504]);
 

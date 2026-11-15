@@ -58,13 +58,14 @@ src/
   data/                 Phase 1 dashboard demo content
   logic/                Game balance, events, decisions, engine, scoring
     __tests__/           Simulation engine tests
+  nasa/                  Shared NASA schemas, normalization, cache and provenance
   styles/                Dashboard and simulation stylesheets
   App.jsx                App navigation and React state wiring
   main.jsx               Browser entry point
 server/
   index.js               Loopback-only NASA API boundary
-  nasa/                  Adapters, M0-based validators, transport and provenance
-    __tests__/            Fixture, validation and transport tests
+  nasa/                  Server-only NASA adapters and transport
+    __tests__/            API boundary and transport tests
 ```
 
 ## Technology
@@ -80,7 +81,7 @@ Dependencies are recorded in `package.json` and `package-lock.json`. Keep genera
 
 ## NASA API foundation (Phase 3 M1)
 
-Reusable NASA adapters and verified response validators live under `server/nasa/`. Run `npm run api` to start the server-only API boundary. Authenticated DONKI operations read `NASA_API_KEY` from the server process environment; the key is never read by Vite or included in frontend code. In PowerShell, set a registered key only in the terminal session before starting the server:
+Reusable adapters and server transport live under `server/nasa/`; shared response schemas, normalization, cache, and provenance live under `src/nasa/`. Run `npm run api` to start the server-only API boundary. Authenticated DONKI operations read `NASA_API_KEY` from the server process environment; the key is never read by Vite or included in frontend code. In PowerShell, set a registered key only in the terminal session before starting the server:
 
 ```powershell
 $env:NASA_API_KEY = '<registered NASA API key>'
@@ -89,6 +90,6 @@ npm run api
 
 Do not use `VITE_*` names, commit `.env` files, or put credentials in public, user-supplied, committed, or browser-visible URLs, fixtures, logs, or browser requests. NASA requires the server to send the key as an outbound query parameter; the adapter strips it from provenance URLs and does not log request URLs. Production requests reject `DEMO_KEY`. The API server binds to loopback by default and does not enable cross-origin access. Do not expose it through a public reverse proxy until caller authentication and abuse-rate controls are in place.
 
-The server routes are `GET /api/nasa/donki/{cme,gst,sep,ips}`, the explicitly unverified `GET /api/nasa/donki/flr`, `GET /api/nasa/images/search?q=...`, and image `GET /api/nasa/images/{asset,metadata}/{nasa_id}`. These routes are not yet connected to the React application.
+The server routes are `GET /api/nasa/donki/{cme,gst,sep,ips}`, the explicitly unverified `GET /api/nasa/donki/flr`, `GET /api/nasa/images/search?q=...`, and image `GET /api/nasa/images/{asset,metadata}/{nasa_id}`. Vite proxies same-origin `/api` requests to the loopback service; direct browser requests to NASA are not used. For live access, run `npm run api` and `npm run dev` in separate terminals. Without the API service, the application can use its bundled archives and offline cache.
 
-DONKI CME, GST, SEP and IPS payloads are validated against genuine M0 samples. FLR remains explicitly schema-unverified. NASA Images search, asset, and metadata responses have separate validators. Transport failures use bounded retries only for network errors and selected 5xx responses (two retries by default, a hard cap of five); 429 returns a normalized rate-limit error and `Retry-After` rather than retrying automatically. Request provenance distinguishes `NASA_LIVE`, `NASA_ARCHIVE`, `DERIVED`, and `SIMULATED`. This foundation does not connect NASA observations to simulation outcomes.
+DONKI CME, GST, SEP and IPS payloads are validated against genuine M0 samples. FLR remains explicitly schema-unverified. NASA Images search, asset, and metadata responses have separate validators. Transport failures use bounded retries only for network errors and selected 5xx responses (two retries by default, a hard cap of five); 429 returns a normalized rate-limit error and `Retry-After` rather than retrying automatically. Request provenance distinguishes `NASA_LIVE`, `NASA_ARCHIVE`, `DERIVED`, and `SIMULATED`. The browser repository uses memory and IndexedDB caches, a 15-minute configurable TTL, stale-while-revalidate, and the genuine bundled M0 snapshots for REPLAY/OFFLINE operation. This foundation does not connect NASA observations to simulation outcomes.

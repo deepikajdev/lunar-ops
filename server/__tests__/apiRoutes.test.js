@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createNasaRequestHandler } from '../index.js';
-import { NasaApiError } from '../nasa/errors.js';
+import { NasaApiError } from '../../src/nasa/errors.js';
 
 async function invoke(handler, method, url) {
   const response = {

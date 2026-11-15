@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { normalizeDonkiEvents } from '../normalize.js';
-import { createProvenance } from '../provenance.js';
+import { normalizeDonkiEvents } from '../../../src/nasa/normalize.js';
+import { createProvenance } from '../../../src/nasa/provenance.js';
 
 const fixtures = new URL('../../../tests/fixtures/nasa/', import.meta.url);
 const load = async (kind) => JSON.parse(await readFile(fileURLToPath(new URL(`donki-${kind}-2024-05-08-to-12-demokey-test.json`, fixtures)), 'utf8'));

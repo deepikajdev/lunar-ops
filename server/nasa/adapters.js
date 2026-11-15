@@ -1,7 +1,7 @@
-import { NasaApiError } from './errors.js';
+import { NasaApiError } from '../../src/nasa/errors.js';
 import { createNasaHttpClient } from './httpClient.js';
-import { createProvenance } from './provenance.js';
-import { validateDonkiPayload, validateImagePayload } from './schemas.js';
+import { createProvenance } from '../../src/nasa/provenance.js';
+import { validateDonkiPayload, validateImagePayload } from '../../src/nasa/schemas.js';
 
 const DONKI_ENDPOINTS = Object.freeze({ cme: 'CME', gst: 'GST', sep: 'SEP', ips: 'IPS' });
 const DONKI_QUERY_KEYS = new Set(['startDate', 'endDate', 'location', 'catalog']);
