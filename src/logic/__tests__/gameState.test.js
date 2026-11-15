@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialGameState } from '../gameState.js';
 import { GAME_CONFIG } from '../gameConfig.js';
-import { advanceDay } from '../engine.js';
+import { advanceDay, canSelectDecision, selectDecision } from '../engine.js';
 import { EVENT_CATALOG, getEventForDay } from '../events.js';
+import { DECISION_CATALOG } from '../decisions.js';
 
 test('initializes a ten-day mission with independent game-balance resources', () => {
   const state = createInitialGameState();
@@ -129,4 +130,57 @@ test('initialization and day progression assign deterministic events to each day
   assert.equal(state.activeEvent?.id ?? null, getEventForDay(718, 1)?.id ?? null);
   assert.equal(next.activeEvent?.id ?? null, getEventForDay(718, 2, state.activeEvent?.id ?? null)?.id ?? null);
   assert.equal(next.eventCount, state.eventCount + (next.activeEvent ? 1 : 0));
+});
+
+test('decision catalog provides tradeoffs for all required survival controls', () => {
+  const ids = new Set(DECISION_CATALOG.map((decision) => decision.id));
+  for (const id of ['emergency_power', 'reduced_operations', 'oxygen_priority', 'repair_systems', 'emergency_shelter', 'water_conservation', 'delay_activity']) {
+    assert.ok(ids.has(id), `missing decision ${id}`);
+    const choice = DECISION_CATALOG.find((decision) => decision.id === id);
+    assert.ok(choice.costs && choice.benefits && choice.risks);
+  }
+});
+
+test('decisions change daily resources, equipment, crew health, and continuity', () => {
+  const noEvent = createInitialGameState();
+  noEvent.activeEvent = null;
+  const reduced = advanceDay(selectDecision(noEvent, 'reduced_operations'));
+  assert.equal(reduced.resources.power.current, 83.8);
+  assert.equal(reduced.continuity, 99);
+
+  const conserve = { ...noEvent, selectedDecisionId: 'water_conservation' };
+  const conserved = advanceDay(conserve);
+  assert.equal(conserved.resources.water.current, 88.4);
+  assert.deepEqual(conserved.crew.map((person) => person.health), [99, 95, 97, 96]);
+
+  const repair = { ...noEvent, selectedDecisionId: 'repair_systems' };
+  const repaired = advanceDay(repair);
+  assert.equal(repaired.resources.power.current, 67);
+  assert.equal(repaired.equipment.find((item) => item.id === 'water-recycler').condition, 95);
+});
+
+test('unaffordable and unknown decisions are rejected without mutating state', () => {
+  const state = createInitialGameState();
+  state.resources.power.current = 7;
+  assert.equal(canSelectDecision(state, 'repair_systems'), false);
+  assert.equal(selectDecision(state, 'repair_systems'), state);
+  assert.equal(canSelectDecision(state, 'unknown_choice'), false);
+  assert.equal(selectDecision(state, 'unknown_choice'), state);
+  assert.equal(state.selectedDecisionId, 'balanced_ops');
+});
+
+test('event consequences apply and a compatible choice mitigates the incident', () => {
+  const state = createInitialGameState();
+  state.activeEvent = EVENT_CATALOG.find((event) => event.id === 'power-malfunction');
+  state.eventCount = 1;
+  const addressed = advanceDay(selectDecision(state, 'repair_systems'));
+
+  assert.equal(addressed.emergencyResponses, 1);
+  assert.equal(addressed.equipment.find((item) => item.id === 'backup-generator').condition, 90);
+  assert.equal(addressed.history[0].eventResponse, 'Repair generator');
+  assert.match(addressed.history[0].summary, /power malfunction/i);
+
+  const unmitigated = advanceDay({ ...state, selectedDecisionId: 'balanced_ops' });
+  assert.equal(unmitigated.emergencyResponses, 0);
+  assert.ok(unmitigated.resources.power.current < addressed.resources.power.current);
 });
