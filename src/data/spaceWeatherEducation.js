@@ -1,0 +1,12 @@
+export const SPACE_WEATHER_CARDS = Object.freeze([
+  Object.freeze({ id: 'flares', title: 'Solar flares', tag: 'RADIATION', body: 'A flare is an intense burst of radiation from the Sun. Flares and particle events are related solar activity, but the presence of a flare record alone does not specify particle exposure at a lunar outpost.', sourceLabel: 'NASA · Solar storms and flares', sourceUrl: 'https://science.nasa.gov/sun/solar-storms-and-flares/' }),
+  Object.freeze({ id: 'cmes', title: 'Coronal mass ejections', tag: 'SOLAR PLASMA', body: 'A CME ejects a large cloud of solar plasma and magnetic field. Catalog associations with other events are useful context; they do not establish local lunar surface effects.', sourceLabel: 'NASA · Solar storms and flares', sourceUrl: 'https://science.nasa.gov/sun/solar-storms-and-flares/' }),
+  Object.freeze({ id: 'seps', title: 'Solar energetic particles', tag: 'RADIATION CONTEXT', body: 'Energetic particles can contribute to astronaut radiation hazards. DONKI SEP observations are not a lunar dose estimate; exposure depends on event evolution, shielding, location, and other conditions.', sourceLabel: 'NASA · Protecting astronauts from space radiation', sourceUrl: 'https://science.nasa.gov/science-research/heliophysics/how-nasa-will-protect-astronauts-from-space-radiation-at-the-moon/' }),
+  Object.freeze({ id: 'geomagnetic-storms', title: 'Geomagnetic storms and Kp', tag: 'EARTH CONTEXT', body: 'Kp summarizes geomagnetic disturbance using ground-based observations at Earth. The index shown with a DONKI GST record is Earth context, not a lunar environment measurement.', sourceLabel: 'NOAA SWPC · Planetary K index', sourceUrl: 'https://www.swpc.noaa.gov/products/planetary-k-index' }),
+]);
+
+export const ABOUT_SOURCES = Object.freeze([
+  Object.freeze({ name: 'NASA DONKI', scope: 'CME, GST, SEP and IPS event records and source links. FLR remains schema-unverified and is not displayed as a normalized event.', url: 'https://api.nasa.gov/' }),
+  Object.freeze({ name: 'NASA Image and Video Library', scope: 'Titles, descriptions, image renditions, credits and source records for the curated gallery.', url: 'https://images.nasa.gov/' }),
+  Object.freeze({ name: 'NOAA Space Weather Prediction Center', scope: 'Attribution and explanation of Kp index context. No separate live NOAA feed is consumed by this page.', url: 'https://www.swpc.noaa.gov/products/planetary-k-index' }),
+]);
