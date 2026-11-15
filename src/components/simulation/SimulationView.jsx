@@ -2,11 +2,13 @@ import { Activity, BatteryCharging, CalendarDays, RadioTower, ShieldCheck } from
 import { GAME_CONFIG } from '../../logic/gameConfig.js';
 import { ActiveEventPanel } from './ActiveEventPanel.jsx';
 import { CrewHealthPanel } from './CrewHealthPanel.jsx';
+import { DecisionPanel } from './DecisionPanel.jsx';
 import { EquipmentStatusPanel } from './EquipmentStatusPanel.jsx';
+import { MissionLogPanel } from './MissionLogPanel.jsx';
 import { SimulationResourceGrid } from './SimulationResourceGrid.jsx';
 import '../../styles/simulation.css';
 
-export function SimulationView({ state }) {
+export function SimulationView({ state, dispatch }) {
   const progress = Math.round(((state.day - 1) / (state.maxDays - 1)) * 100);
   const warnings = Object.entries(state.resources).filter(([, resource]) => resource.current <= resource.warningThreshold).length;
 
@@ -35,9 +37,11 @@ export function SimulationView({ state }) {
         <SimulationResourceGrid resources={state.resources} />
       </section>
 
-      <section className="sim-monitor-grid" aria-label="Crew, equipment, and event status">
+      {state.status === 'active' ? <div className="sim-action-grid"><DecisionPanel state={state} dispatch={dispatch} /><ActiveEventPanel event={state.activeEvent} selectedDecisionId={state.selectedDecisionId} /></div> : <section className="panel sim-outcome-preview"><p className="section-kicker">MISSION COMPLETE</p><h2>{state.score?.summary}</h2><strong>{state.score?.total ?? 0}<span> / 100</span></strong><button type="button" onClick={() => dispatch({ type: 'restart' })}>Restart scenario</button></section>}
+
+      <section className="sim-monitor-grid" aria-label="Crew, equipment, and daily mission log">
         <div className="sim-monitor-left"><CrewHealthPanel crew={state.crew} /><EquipmentStatusPanel equipment={state.equipment} /></div>
-        <ActiveEventPanel event={state.activeEvent} selectedDecisionId={state.selectedDecisionId} />
+        <MissionLogPanel history={state.history} />
       </section>
 
       <footer className="sim-disclaimer"><span>GAME MODEL ONLY <b>·</b> NOT OPERATIONAL LUNAR ESTIMATES</span><span>ENGINE BALANCE VALUES ARE ILLUSTRATIVE AND NOT NASA DATA</span></footer>
