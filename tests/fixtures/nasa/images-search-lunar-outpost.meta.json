@@ -1,0 +1,37 @@
+{
+    "source":  "NASA",
+    "endpoint":  "https://images-api.nasa.gov/search",
+    "queryParameters":  {
+                            "q":  "lunar outpost",
+                            "page_size":  "3",
+                            "media_type":  "image"
+                        },
+    "retrievedDate":  "2026-11-15",
+    "credentialMode":  "No API key used",
+    "statusCode":  200,
+    "contentType":  "application/json",
+    "responseFile":  "images-search-lunar-outpost.json",
+    "responseBytes":  6498,
+    "responseHeaders":  {
+                            "Connection":  "keep-alive",
+                            "Access-Control-Allow-Headers":  "Origin,Content-Type,Accept,Authorization,X-Requested-With",
+                            "Access-Control-Allow-Methods":  "GET",
+                            "Access-Control-Allow-Origin":  "*",
+                            "X-XSS-Protection":  "1; mode=block",
+                            "Strict-Transport-Security":  "max-age=31536000",
+                            "Content-Security-Policy-Report-Only":  "default-src https:; report-uri /csp-violation-report/",
+                            "Referrer-Policy":  "same-origin",
+                            "X-Content-Type-Options":  "nosniff",
+                            "X-Frame-Options":  "SAMEORIGIN",
+                            "X-Cache":  "Miss from cloudfront",
+                            "X-Amz-Cf-Pop":  "MAA50-P2",
+                            "X-Amz-Cf-Id":  "Bab5ZrOnyPI77Cte2Eyt7Gu0_GSHghpVl0C23gWSUkyAVXvhwrSMqw==",
+                            "Cache-Control":  "public, max-age=300, s-maxage=600",
+                            "Date":  "Sun, 15 Nov 2026 04:47:27 GMT",
+                            "Server":  "nginx/1.29.8",
+                            "Via":  "1.1 8d08c9c399ceb8f69ca06f5f15eb6f68.cloudfront.net (CloudFront)",
+                            "Content-Length":  "6498",
+                            "Content-Type":  "application/json"
+                        },
+    "note":  "Response body saved as received; credentials are not stored in this metadata."
+}

@@ -1,0 +1,35 @@
+{
+  "source": "NASA",
+  "endpoint": "https://images-api.nasa.gov/metadata/{nasa_id}",
+  "queryParameters": {
+    "nasa_id": "jsc2026e417568"
+  },
+  "retrievedDate": "2026-11-15",
+  "credentialMode": "No API key used",
+  "statusCode": 200,
+  "contentType": "application/json",
+  "responseFile": "images-metadata-jsc2026e417568.json",
+  "responseBytes": 80,
+  "responseHeaders": {
+    "Connection": "keep-alive",
+    "Access-Control-Allow-Headers": "Origin,Content-Type,Accept,Authorization,X-Requested-With",
+    "Access-Control-Allow-Methods": "GET,PUT",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "private",
+    "Date": "Sun, 15 Nov 2026 04:51:50 GMT",
+    "Server": "nginx/1.29.8",
+    "Referrer-Policy": "same-origin",
+    "X-XSS-Protection": "1; mode=block",
+    "Content-Security-Policy-Report-Only": "default-src https:; report-uri /csp-violation-report/",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Strict-Transport-Security": "max-age=31536000",
+    "X-Content-Type-Options": "nosniff",
+    "X-Cache": "Miss from cloudfront",
+    "Via": "1.1 f0b4d967b3ec06f75167a5f4422a9df0.cloudfront.net (CloudFront)",
+    "X-Amz-Cf-Pop": "MAA50-P2",
+    "X-Amz-Cf-Id": "Xd-I8HHTAzEXUPs17-KTxYJiHN_iRVTN4DFXMk2m6EuAIUTZbk2M2Q==",
+    "Content-Type": "application/json",
+    "Content-Length": "80"
+  },
+  "note": "Response body saved as received; credentials are not stored in this metadata."
+}

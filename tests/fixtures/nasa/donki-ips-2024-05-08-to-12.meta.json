@@ -1,0 +1,29 @@
+{
+    "source":  "NASA",
+    "endpoint":  "https://api.nasa.gov/DONKI/IPS",
+    "queryParameters":  {
+                            "startDate":  "2024-05-08",
+                            "endDate":  "2024-05-12"
+                        },
+    "retrievedDate":  "2026-11-15",
+    "statusCode":  403,
+    "contentType":  "application/json",
+    "responseFile":  "donki-ips-2024-05-08-to-12.json",
+    "responseBytes":  129,
+    "responseHeaders":  {
+                            "Transfer-Encoding":  "chunked",
+                            "Connection":  "keep-alive",
+                            "Vary":  "Accept-Encoding, Accept-Encoding",
+                            "Access-Control-Allow-Origin":  "*",
+                            "Strict-Transport-Security":  "max-age=31536000; includeSubDomains; preload",
+                            "X-Api-Umbrella-Request-Id":  "d1rm3gbb5ssd1dojlhsg",
+                            "X-Cache":  "MISS",
+                            "X-Content-Type-Options":  "nosniff",
+                            "X-Vcap-Request-Id":  "337c0b17-ba70-4c69-7f4e-c7730908266d",
+                            "X-Xss-Protection":  "1; mode=block",
+                            "X-Frame-Options":  "DENY",
+                            "Date":  "Sun, 15 Nov 2026 04:46:15 GMT",
+                            "Content-Type":  "application/json"
+                        },
+    "note":  "Response body saved as received; api_key omitted from the request."
+}

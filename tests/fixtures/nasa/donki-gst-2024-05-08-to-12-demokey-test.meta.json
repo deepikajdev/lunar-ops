@@ -1,0 +1,38 @@
+{
+    "source":  "NASA",
+    "endpoint":  "https://api.nasa.gov/DONKI/GST",
+    "queryParameters":  {
+                            "startDate":  "2024-05-08",
+                            "endDate":  "2024-05-12"
+                        },
+    "retrievedDate":  "2026-11-15",
+    "credentialMode":  "DEMO_KEY used for verification only; key value omitted from this file",
+    "statusCode":  200,
+    "contentType":  "application/json",
+    "responseFile":  "donki-gst-2024-05-08-to-12-demokey-test.json",
+    "responseBytes":  3160,
+    "responseHeaders":  {
+                            "Connection":  "keep-alive",
+                            "Vary":  "Accept-Encoding, Accept-Encoding, Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+                            "Access-Control-Allow-Origin":  "*",
+                            "Age":  "0",
+                            "Pragma":  "no-cache",
+                            "Strict-Transport-Security":  "max-age=31536000; includeSubDomains; preload",
+                            "X-Api-Umbrella-Request-Id":  "d1rm417hu3a4pcipmq4g",
+                            "X-Cache":  "MISS",
+                            "X-Content-Type-Options":  "nosniff, nosniff",
+                            "X-Rate-Limit-Remaining":  "119",
+                            "X-Ratelimit-Limit":  "10",
+                            "X-Ratelimit-Remaining":  "7",
+                            "X-Vcap-Request-Id":  "f7984550-30ea-4022-754f-e82ea84f7d5a",
+                            "X-Xss-Protection":  "1; mode=block, 0",
+                            "X-Frame-Options":  "SAMEORIGIN",
+                            "Cache-Control":  "no-store, must-revalidate, no-cache, max-age=0",
+                            "Date":  "Sun, 15 Nov 2026 04:47:25 GMT",
+                            "Via":  "https/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])",
+                            "Content-Length":  "3160",
+                            "Content-Type":  "application/json",
+                            "Expires":  "0"
+                        },
+    "note":  "Response body saved as received; credentials are not stored in this metadata."
+}

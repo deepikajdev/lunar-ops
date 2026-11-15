@@ -1,0 +1,29 @@
+{
+    "source":  "NASA",
+    "endpoint":  "https://api.nasa.gov/DONKI/GST",
+    "queryParameters":  {
+                            "startDate":  "2024-05-08",
+                            "endDate":  "2024-05-12"
+                        },
+    "retrievedDate":  "2026-11-15",
+    "statusCode":  403,
+    "contentType":  "application/json",
+    "responseFile":  "donki-gst-2024-05-08-to-12.json",
+    "responseBytes":  129,
+    "responseHeaders":  {
+                            "Transfer-Encoding":  "chunked",
+                            "Connection":  "keep-alive",
+                            "Vary":  "Accept-Encoding, Accept-Encoding",
+                            "Access-Control-Allow-Origin":  "*",
+                            "Strict-Transport-Security":  "max-age=31536000; includeSubDomains; preload",
+                            "X-Api-Umbrella-Request-Id":  "d1rm3funs0ltsleltg4g",
+                            "X-Cache":  "MISS",
+                            "X-Content-Type-Options":  "nosniff",
+                            "X-Vcap-Request-Id":  "745b3700-2d4e-46e4-40ae-50f73ca2bdc7",
+                            "X-Xss-Protection":  "1; mode=block",
+                            "X-Frame-Options":  "DENY",
+                            "Date":  "Sun, 15 Nov 2026 04:46:14 GMT",
+                            "Content-Type":  "application/json"
+                        },
+    "note":  "Response body saved as received; api_key omitted from the request."
+}
