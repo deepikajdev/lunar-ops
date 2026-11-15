@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createNasaRequestHandler } from '../index.js';
 import { NasaApiError } from '../../src/nasa/errors.js';
 
-async function invoke(handler, method, url) {
+async function invoke(handler, method, url, { origin, remoteAddress } = {}) {
   const response = {
     status: null,
     headers: null,
@@ -11,7 +11,9 @@ async function invoke(handler, method, url) {
     writeHead(status, headers) { this.status = status; this.headers = headers; },
     end(body) { this.body = body; },
   };
-  await handler({ method, url }, response);
+  const request = { method, url, headers: origin ? { origin } : {} };
+  if (remoteAddress) request.socket = { remoteAddress };
+  await handler(request, response);
   return { ...response, json: JSON.parse(response.body) };
 }
 
@@ -37,6 +39,23 @@ test('serves normalized adapter data without enabling cross-origin browser acces
   assert.equal((await invoke(handler, 'GET', '/api/nasa/images/search')).status, 400);
   assert.equal((await invoke(handler, 'GET', '/api/nasa/not-a-route')).status, 404);
   assert.equal((await invoke(handler, 'POST', '/api/nasa/donki/cme')).status, 405);
+});
+
+test('limits request bursts, validates URL size, and only returns CORS headers for allowlisted origins', async () => {
+  let now = 0;
+  const adapters = { cme: async () => ({ data: [] }), gst: async () => ({}), sep: async () => ({}), ips: async () => ({}), flrUnverified: async () => ({}), imageSearch: async () => ({}), imageAsset: async () => ({}), imageMetadata: async () => ({}) };
+  const handler = createNasaRequestHandler({ adapters, allowedOrigins: ['https://mission.example'], rateLimit: { windowMs: 10_000, maxRequests: 1 }, maxUrlLength: 80, now: () => now });
+  const allowed = await invoke(handler, 'GET', '/api/nasa/donki/cme', { origin: 'https://mission.example', remoteAddress: '198.51.100.2' });
+  assert.equal(allowed.status, 200);
+  assert.equal(allowed.headers['access-control-allow-origin'], 'https://mission.example');
+  const limited = await invoke(handler, 'GET', '/api/nasa/donki/cme', { remoteAddress: '198.51.100.2' });
+  assert.equal(limited.status, 429);
+  assert.equal(limited.headers['retry-after'], '10');
+  now = 11_000;
+  assert.equal((await invoke(handler, 'GET', `/api/nasa/donki/cme?x=${'a'.repeat(100)}`)).status, 414);
+  const denied = await invoke(handler, 'OPTIONS', '/api/nasa/donki/cme', { origin: 'https://untrusted.example' });
+  assert.equal(denied.status, 403);
+  assert.equal(denied.headers['access-control-allow-origin'], undefined);
 });
 
 test('maps missing credentials and 429 to safe HTTP errors', async () => {

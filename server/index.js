@@ -32,10 +32,45 @@ function statusForError(error) {
   return 500;
 }
 
-export function createNasaRequestHandler({ adapters = createNasaAdapters() } = {}) {
+export function createNasaRequestHandler({
+  adapters = createNasaAdapters(),
+  allowedOrigins = [],
+  rateLimit = { windowMs: 60_000, maxRequests: 120 },
+  maxUrlLength = 2048,
+  now = () => Date.now(),
+} = {}) {
+  const windows = new Map();
+  const originAllowlist = new Set(allowedOrigins);
+  const windowMs = Math.max(1_000, Number(rateLimit.windowMs) || 60_000);
+  const maxRequests = Math.max(1, Number(rateLimit.maxRequests) || 120);
+  function rateLimitFor(key) {
+    const current = now();
+    const existing = windows.get(key);
+    if (!existing || current >= existing.resetAt) {
+      const next = { count: 1, resetAt: current + windowMs };
+      windows.set(key, next);
+      return { allowed: true, retryAfter: 0 };
+    }
+    existing.count += 1;
+    return { allowed: existing.count <= maxRequests, retryAfter: Math.max(1, Math.ceil((existing.resetAt - current) / 1000)) };
+  }
   return async (request, response) => {
-    if (request.method !== 'GET') return json(response, 405, { error: { code: 'METHOD_NOT_ALLOWED', message: 'Only GET is supported.' } });
+    const origin = request.headers?.origin;
+    const corsHeaders = origin && originAllowlist.has(origin) ? { 'access-control-allow-origin': origin, vary: 'Origin' } : {};
+    if (request.method === 'OPTIONS') {
+      if (!origin || !originAllowlist.has(origin)) return json(response, 403, { error: { code: 'ORIGIN_FORBIDDEN', message: 'Origin is not allowed.' } });
+      response.writeHead(204, { ...corsHeaders, 'access-control-allow-methods': 'GET, OPTIONS', 'access-control-allow-headers': 'content-type', 'access-control-max-age': '600' });
+      return response.end();
+    }
+    if (request.method !== 'GET') return json(response, 405, { error: { code: 'METHOD_NOT_ALLOWED', message: 'Only GET is supported.' } }, corsHeaders);
+    if (typeof request.url !== 'string' || request.url.length > maxUrlLength) return json(response, 414, { error: { code: 'REQUEST_TOO_LARGE', message: 'Request URL is too long.' } }, corsHeaders);
+    const clientKey = request.socket?.remoteAddress ?? 'local-unknown';
+    const quota = rateLimitFor(clientKey);
+    if (!quota.allowed) return json(response, 429, { error: { code: 'NASA_PROXY_RATE_LIMITED', message: 'Too many requests. Please wait before retrying.' } }, { ...corsHeaders, 'retry-after': String(quota.retryAfter) });
     const url = new URL(request.url, 'http://localhost');
+    if ([...url.searchParams].length > 16 || [...url.searchParams].some(([key, value]) => key.length > 64 || value.length > 500)) {
+      return json(response, 400, { error: { code: 'NASA_INVALID_REQUEST', message: 'Query parameters exceed allowed limits.' } }, corsHeaders);
+    }
     try {
       let result;
       const donkiMatch = url.pathname.match(/^\/api\/nasa\/donki\/(cme|gst|sep|ips|flr)$/);
@@ -59,13 +94,13 @@ export function createNasaRequestHandler({ adapters = createNasaAdapters() } = {
         if (nasaId.length > 180 || /[\\/\u0000-\u001f?#]/.test(nasaId)) throw new NasaApiError('NASA_INVALID_REQUEST', 'Invalid NASA ID.');
         result = kind === 'asset' ? await adapters.imageAsset(nasaId) : await adapters.imageMetadata(nasaId);
       }
-      return json(response, 200, result);
+      return json(response, 200, result, corsHeaders);
     } catch (error) {
       const normalized = error instanceof NasaApiError
         ? error
         : new NasaApiError('NASA_INTERNAL_ERROR', 'NASA request failed unexpectedly.');
       const rateHeaders = normalized.retryAfterMs === null ? {} : { 'retry-after': String(Math.ceil(normalized.retryAfterMs / 1000)) };
-      return json(response, statusForError(normalized), normalized.toJSON(), rateHeaders);
+      return json(response, statusForError(normalized), normalized.toJSON(), { ...corsHeaders, ...rateHeaders });
     }
   };
 }
@@ -77,5 +112,11 @@ export function createNasaServer(options) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const port = Number(process.env.NASA_API_PORT ?? 8787);
   const host = process.env.NASA_API_HOST ?? '127.0.0.1';
-  createNasaServer().listen(port, host, () => process.stdout.write(`NASA API proxy listening on http://${host}:${port}\n`));
+  const loopbackHosts = new Set(['127.0.0.1', '::1', 'localhost']);
+  if (!loopbackHosts.has(host) && process.env.NASA_API_TRUSTED_PROXY !== 'true') {
+    throw new Error('Non-loopback binding requires NASA_API_TRUSTED_PROXY=true and a trusted proxy that authenticates callers.');
+  }
+  const allowedOrigins = (process.env.NASA_API_ALLOWED_ORIGINS ?? '').split(',').map((value) => value.trim()).filter(Boolean);
+  const rateLimit = { windowMs: Number(process.env.NASA_PROXY_RATE_WINDOW_MS) || 60_000, maxRequests: Number(process.env.NASA_PROXY_RATE_MAX) || 120 };
+  createNasaServer({ allowedOrigins, rateLimit }).listen(port, host, () => process.stdout.write(`NASA API proxy listening on http://${host}:${port}\n`));
 }
