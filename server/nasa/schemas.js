@@ -20,12 +20,9 @@ const notifications = isNullable(arrayOf(objectWith({
   messageIssueTime: isString,
   messageURL: isString,
 })));
-const cmeAnalysis = objectWith({
+const cmeAnalysis = objectWith({}, {
   isMostAccurate: isBoolean,
   levelOfData: isNumber,
-  submissionTime: isString,
-  link: isString,
-}, {
   time21_5: isString,
   latitude: isNullable(isNumber),
   longitude: isNullable(isNumber),
@@ -45,11 +42,11 @@ const cmeAnalysis = objectWith({
 export const DONKI_SCHEMAS = Object.freeze({
   cme: arrayOf(objectWith({
     activityID: isString,
+  }, {
     startTime: isString,
     submissionTime: isString,
     link: isString,
     versionId: isInteger,
-  }, {
     catalog: isString,
     instruments,
     sourceLocation: isString,
@@ -61,29 +58,39 @@ export const DONKI_SCHEMAS = Object.freeze({
   })),
   gst: arrayOf(objectWith({
     gstID: isString,
+  }, {
     startTime: isString,
     submissionTime: isString,
     link: isString,
     versionId: isInteger,
     allKpIndex: arrayOf(objectWith({ kpIndex: isNumber, observedTime: isString, source: isString })),
-  }, { linkedEvents, sentNotifications: notifications })),
+    linkedEvents,
+    sentNotifications: notifications,
+  })),
   sep: arrayOf(objectWith({
     sepID: isString,
+  }, {
     eventTime: isString,
     submissionTime: isString,
     link: isString,
     versionId: isInteger,
     instruments,
-  }, { linkedEvents, sentNotifications: notifications })),
+    linkedEvents,
+    sentNotifications: notifications,
+  })),
   ips: arrayOf(objectWith({
     activityID: isString,
+  }, {
     eventTime: isString,
     location: isString,
     submissionTime: isString,
     link: isString,
     versionId: isInteger,
     instruments,
-  }, { catalog: isString, linkedEvents, sentNotifications: notifications })),
+    catalog: isString,
+    linkedEvents,
+    sentNotifications: notifications,
+  })),
 });
 
 const imageData = objectWith({ nasa_id: isString, title: isString, media_type: isString }, {
