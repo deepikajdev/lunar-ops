@@ -34,7 +34,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid #85d8e9; outline-offs
 .brand strong { font-family: var(--display); font-size: 15px; letter-spacing: .075em; }
 .brand strong span { color: #92d4e7; }
 .brand small { color: #748197; font-family: var(--mono); font-size: 8px; letter-spacing: .16em; }
-.mission-switcher { display: flex; align-items: center; width: 100%; padding: 11px 9px; text-align: left; border: 1px solid rgba(177,194,224,.1); border-radius: 8px; background: #0e1521; cursor: default; }
+.mission-switcher-wrap { position: relative; }
+.mission-switcher { display: flex; align-items: center; width: 100%; padding: 11px 9px; text-align: left; border: 1px solid rgba(177,194,224,.1); border-radius: 8px; background: #0e1521; cursor: pointer; }
+.mission-switcher:hover,.mission-switcher[aria-expanded="true"] { border-color: rgba(120,214,232,.3); background: #101a28; }
 .mission-switcher-icon { display: grid; width: 29px; height: 29px; margin-right: 9px; place-items: center; color: #88d7e9; background: rgba(75,161,190,.12); border-radius: 6px; }
 .mission-switcher-copy { display: grid; flex: 1; gap: 4px; }
 .mission-switcher-copy small { color: #6f7e94; font: 9px var(--mono); letter-spacing: .11em; }
@@ -55,12 +57,18 @@ button:focus-visible, a:focus-visible { outline: 2px solid #85d8e9; outline-offs
 .comms-card span { color: #718098; font: 8px var(--mono); letter-spacing: .14em; }
 .comms-card strong { color: #aeb9c9; font-size: 10px; font-weight: 500; }
 .comms-card strong i, .live-dot, .simulation-pill span, .simulated-label span { display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: #79d9b5; box-shadow: 0 0 8px rgba(121,217,181,.6); }
-.profile-button { display: flex; align-items: center; width: 100%; gap: 9px; margin-top: 13px; padding: 12px 3px 4px; text-align: left; border: 0; border-top: 1px solid var(--stroke); background: transparent; cursor: default; }
+.profile-card { display: flex; align-items: center; width: 100%; gap: 9px; margin-top: 13px; padding: 12px 3px 4px; text-align: left; border-top: 1px solid var(--stroke); }
 .profile-avatar { display: grid; width: 30px; height: 30px; place-items: center; color: #d8ccff; border: 1px solid rgba(172,151,236,.24); border-radius: 50%; background: #292442; font: 10px var(--mono); }
 .profile-copy { display: grid; flex: 1; gap: 3px; }
 .profile-copy strong { color: #d2d8e3; font-size: 11px; font-weight: 600; }
 .profile-copy small { color: #69778d; font-size: 10px; }
-.profile-button > svg { color: #637189; }
+.mission-popover { position: absolute; top: 0; left: calc(100% + 10px); z-index: 8; width: 245px; padding: 14px; border: 1px solid rgba(120,214,232,.22); border-radius: 7px; background: #101824; box-shadow: 0 14px 35px rgba(0,0,0,.4); }
+.mission-popover h2 { margin: 4px 0 12px; color: #e0e7f1; font: 500 15px var(--display); }
+.mission-popover dl { display: grid; gap: 8px; margin: 0; }
+.mission-popover dl div { display: flex; justify-content: space-between; gap: 12px; }
+.mission-popover dt { color: #75839a; font: 8px var(--mono); }.mission-popover dd { margin: 0; color: #bac6d6; font: 9px var(--mono); text-align: right; }
+.mission-popover > button,.notification-view-all { width: 100%; margin-top: 13px; padding: 8px 9px; color: #9edce6; border: 1px solid rgba(120,214,232,.2); border-radius: 4px; background: rgba(68,129,153,.09); font-size: 9px; text-align: left; cursor: pointer; }
+.mission-popover > button:hover,.notification-view-all:hover { background: rgba(68,129,153,.18); }
 
 .main-content { width: min(100% - 238px, 1660px); min-height: 100vh; margin-left: 238px; padding: 0 38px 25px; }
 .topbar { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; min-height: 74px; border-bottom: 1px solid var(--stroke); }
@@ -73,6 +81,17 @@ button:focus-visible, a:focus-visible { outline: 2px solid #85d8e9; outline-offs
 .simulation-pill span { width: 5px; height: 5px; background: #72d5b0; }
 .icon-button { position: relative; display: grid; width: 31px; height: 31px; place-items: center; color: #8d9bb0; border: 1px solid var(--stroke); border-radius: 6px; background: transparent; cursor: pointer; }
 .notification-button i { position: absolute; top: 6px; right: 7px; width: 4px; height: 4px; border-radius: 50%; background: #e2b76b; }
+.notification-wrap { position: relative; }
+.notification-popover { position: absolute; top: calc(100% + 9px); right: 0; z-index: 8; width: min(310px,calc(100vw - 96px)); padding: 14px; border: 1px solid rgba(177,194,224,.15); border-radius: 7px; background: #101824; box-shadow: 0 14px 35px rgba(0,0,0,.4); }
+.notification-popover[hidden] { display: none; }
+.notification-popover-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.notification-popover-heading h2 { margin: 0; color: #e0e7f1; font: 500 15px var(--display); }
+.notification-popover-heading > span { color: #8a98ab; font: 8px var(--mono); }
+.notification-popover ul { display: grid; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
+.notification-popover li { display: flex; align-items: flex-start; gap: 8px; padding-top: 9px; border-top: 1px solid var(--stroke); color: #d7b96e; }
+.notification-popover li span { display: grid; gap: 4px; }
+.notification-popover li strong { color: #cbd4e1; font-size: 10px; }
+.notification-popover li small { color: #78869b; font: 8px var(--mono); }
 .day-indicator { display: flex; align-items: center; gap: 9px; padding-left: 16px; border-left: 1px solid var(--stroke); }
 .day-icon { display: grid; width: 31px; height: 31px; place-items: center; color: #8bd4e6; border: 1px solid rgba(117,196,218,.14); border-radius: 6px; background: rgba(65,132,158,.1); }
 .day-indicator > div:last-child { display: grid; gap: 3px; }
@@ -193,6 +212,18 @@ button:focus-visible, a:focus-visible { outline: 2px solid #85d8e9; outline-offs
 .activity-line { position: absolute; top: 23px; bottom: 0; left: 11px; width: 1px; background: rgba(156,176,206,.12); }
 .page-footer { display: flex; justify-content: space-between; margin-top: 20px; color: #556177; font: 7px var(--mono); letter-spacing: .1em; }
 .page-footer b { padding: 0 3px; color: #75849a; font-weight: 400; }
+.operations-page-header { display: flex; align-items: center; gap: 14px; margin-top: 31px; padding: 19px; }
+.operations-page-icon { display: grid; flex: 0 0 auto; width: 38px; height: 38px; place-items: center; color: #83d8e9; border: 1px solid rgba(117,196,218,.18); border-radius: 8px; background: rgba(65,132,158,.1); }
+.operations-page-header h1 { margin: 0; color: #e3eaf3; font: 500 22px var(--display); letter-spacing: -.025em; }
+.operations-page-header > div > p:last-child { margin: 6px 0 0; color: #8997ab; font-size: 10px; line-height: 1.5; }
+.operations-resource-section { margin-top: 25px; }
+.operations-view > .emergency-panel,.operations-systems-grid { margin-top: 15px; }
+.operations-systems-grid { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(280px,.8fr); align-items: start; gap: 13px; }
+.operations-outpost { margin: 0; padding: 9px; overflow: hidden; }
+.operations-outpost figcaption { padding: 4px 5px 9px; color: #748198; font: 7px var(--mono); letter-spacing: .08em; }
+.operations-outpost .outpost-art { min-height: 280px; border-radius: 5px; }
+.operations-systems-grid .emergency-panel { min-width: 0; }
+.operations-demo-note { margin: 10px 1px; color: #718097; font-size: 9px; line-height: 1.5; }
 
 @media (min-width: 1500px) {
   .main-content { margin-right: auto; padding-right: 48px; padding-left: 48px; }
@@ -217,7 +248,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid #85d8e9; outline-offs
 @media (max-width: 900px) {
   .sidebar { width: 66px; align-items: center; padding: 18px 9px 12px; }
   .brand { padding: 0 0 24px; }
-  .brand > span, .mission-switcher-copy, .mission-switcher > svg, .nav-label, .nav-item > span, .sidebar-bottom .comms-card > div:last-child, .profile-copy, .profile-button > svg { display: none; }
+  .brand > span, .mission-switcher-copy, .mission-switcher > svg, .nav-label, .nav-item > span, .sidebar-bottom .comms-card > div:last-child, .profile-copy { display: none; }
   .mission-switcher { width: 43px; justify-content: center; padding: 6px; }
   .mission-switcher-icon { margin: 0; }
   .side-nav { width: 100%; margin-top: 16px; }
@@ -225,10 +256,11 @@ button:focus-visible, a:focus-visible { outline: 2px solid #85d8e9; outline-offs
   .nav-item.active::before { left: -10px; }
   .nav-alert-dot { position: absolute; top: 7px; right: 8px; display: block !important; }
   .comms-card { justify-content: center; padding: 8px; }
-  .profile-button { justify-content: center; }
+  .profile-card { justify-content: center; }
   .main-content { width: calc(100% - 66px); margin-left: 66px; }
   .lower-grid { grid-template-columns: 1fr; }
   .right-stack { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+  .operations-systems-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 650px) {
@@ -276,6 +308,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid #85d8e9; outline-offs
   .crew-info strong { font-size: 9px; }
   .crew-status { font-size: 8px; }
   .page-footer { gap: 10px; flex-wrap: wrap; font-size: 6px; }
+  .operations-page-header { align-items: flex-start; margin-top: 27px; padding: 14px; }
+  .operations-page-header h1 { font-size: 18px; }
+  .operations-outpost .outpost-art { min-height: 190px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,20 @@
+import { motion } from 'framer-motion';
+import { ActivityFeed } from './ActivityFeed.jsx';
+import { CrewPanel } from './CrewPanel.jsx';
+import { EmergencyPanel } from './EmergencyPanel.jsx';
+import { OutpostVisual } from './OutpostVisual.jsx';
+import { ResourceCard } from './ResourceCard.jsx';
+
+const appear = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } } };
+
+export function OverviewView({ alerts, activity, crew, resources, onNavigate }) {
+  return <>
+    <motion.section className="mission-hero panel" aria-label="Lunar outpost mission overview" variants={appear} initial="hidden" animate="visible">
+      <div className="hero-copy"><div className="hero-label"><span className="live-dot" /> OUTPOST STATUS <span className="hero-divider">/</span> NOMINAL</div><h2>Home, beyond<br />the horizon.</h2><p className="hero-description">A simulated surface operations overview for the Artemis research outpost.</p><div className="hero-meta"><div><span>LOCATION</span><strong>SHACKLETON RIDGE <i>·</i> SOUTH POLE</strong></div><div><span>LOCAL TIME</span><strong>14:32 <i>·</i> LUNAR STANDARD</strong></div></div></div>
+      <OutpostVisual /><span className="visual-caption">CONCEPTUAL OUTPOST VISUAL · SIMULATED</span>
+    </motion.section>
+    <section className="resource-section" aria-labelledby="resources-heading"><div className="section-heading"><div><p className="section-kicker">LIFE SUPPORT</p><h2 id="resources-heading">Resource reserves</h2></div><span className="simulated-label"><span /> SIMULATED TELEMETRY</span></div><div className="resource-grid">{resources.map((resource, index) => <ResourceCard key={resource.name} resource={resource} index={index} />)}</div></section>
+    <section className="lower-grid" aria-label="Crew and mission updates"><CrewPanel crew={crew} onViewRoster={() => onNavigate('Crew')} /><div className="right-stack"><EmergencyPanel alerts={alerts} /><ActivityFeed activity={activity} onViewLog={() => onNavigate('Mission log')} /></div></section>
+    <footer className="page-footer"><span>LUNAR OPS <b>·</b> EDUCATIONAL SIMULATOR</span><span>ALL VALUES SHOWN ARE SIMULATED DEMO DATA</span></footer>
+  </>;
+}
