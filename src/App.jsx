@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ActivityFeed } from './components/ActivityFeed.jsx';
 import { CrewPanel } from './components/CrewPanel.jsx';
@@ -7,16 +7,21 @@ import { MissionOverview } from './components/MissionOverview.jsx';
 import { OutpostVisual } from './components/OutpostVisual.jsx';
 import { ResourceCard } from './components/ResourceCard.jsx';
 import { Sidebar } from './components/Sidebar.jsx';
+import { SimulationView } from './components/simulation/SimulationView.jsx';
 import { activity, alerts, crew, mission, resources } from './data/simulatedMission.js';
+import { createInitialGameState } from './logic/gameState.js';
+import { simulationReducer } from './logic/engine.js';
 
 const appear = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } } };
 
 function App() {
   const [activeNav, setActiveNav] = useState('Overview');
+  const [simulation, dispatch] = useReducer(simulationReducer, undefined, createInitialGameState);
   return (
     <div className="app-shell">
       <Sidebar activeItem={activeNav} onNavigate={setActiveNav} />
       <main className="main-content">
+        {activeNav === 'Survival sim' ? <SimulationView state={simulation} dispatch={dispatch} /> : <>
         <MissionOverview mission={mission} />
         <motion.section className="mission-hero panel" aria-label="Lunar outpost mission overview" variants={appear} initial="hidden" animate="visible">
           <div className="hero-copy">
@@ -42,6 +47,7 @@ function App() {
           <div className="right-stack"><EmergencyPanel alerts={alerts} /><ActivityFeed activity={activity} /></div>
         </section>
         <footer className="page-footer"><span>LUNAR OPS <b>·</b> EDUCATIONAL SIMULATOR</span><span>ALL VALUES SHOWN ARE SIMULATED DEMO DATA</span></footer>
+        </>}
       </main>
     </div>
   );
