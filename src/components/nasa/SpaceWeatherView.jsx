@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, ArrowUpRight, Clock3, Database, Radio, RefreshCw, Satellite, ShieldAlert } from 'lucide-react';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { createEventRepository } from '../../nasa/repository.js';
 import { mapEventToGameSignal } from '../../nasa/mappingRules.js';
 import { NASA_REPLAY_SCENARIOS } from '../../nasa/replayScenarios.js';
 import { getCuratedNasaImages } from '../../nasa/imageGallery.js';
 import { EducationSources } from './EducationSources.jsx';
+import { createRequestGate } from '../../nasa/requestGate.js';
 import '../../styles/nasa.css';
+
+const KpChart = lazy(() => import('./KpChart.jsx').then((module) => ({ default: module.KpChart })));
 
 const kinds = ['cme', 'gst', 'sep', 'ips'];
 const labels = { CME: 'Coronal mass ejection', GST: 'Geomagnetic storm', SEP: 'Solar energetic particles', IPS: 'Interplanetary shock' };
@@ -34,39 +36,71 @@ export function SpaceWeatherView({ onSendSignal = () => {} }) {
   const [selectedId, setSelectedId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState(null);
+  const requestGate = useRef(createRequestGate());
 
-  const load = useCallback(async (nextMode = mode, refresh = false) => {
+  const load = useCallback(async (nextMode, refresh = false) => {
+    const version = requestGate.current.begin();
     setBusy(true);
+    setRefreshing(false);
     setNotice('');
-    const loaded = await Promise.all(kinds.map((kind) => repository.getEvents(kind, { mode: nextMode, forceRefresh: refresh })));
-    const all = loaded.flatMap((result) => result.events).sort((a, b) => (b.observedAt || '').localeCompare(a.observedAt || ''));
-    setResults(loaded);
-    setEvents(all);
-    setSelectedId((current) => all.some((event) => event.id === current) ? current : all[0]?.id ?? null);
-    if (loaded.some((result) => result.fallbackReason)) setNotice('Live data could not be refreshed. Showing available cached or archived observations.');
+    const settled = await Promise.allSettled(kinds.map((kind) => repository.getEvents(kind, { mode: nextMode, forceRefresh: refresh })));
+    if (!requestGate.current.isCurrent(version)) return;
+    const failures = settled.flatMap((item, index) => item.status === 'rejected' ? [{ eventKind: kinds[index], events: [], mode: 'OFFLINE', requestedMode: nextMode, delivery: 'UNAVAILABLE', lastFetchedAt: null, provenance: { type: 'SIMULATED' }, fallbackReason: item.reason?.code || 'NASA_REQUEST_FAILED' }] : []);
+    const loaded = settled.flatMap((item, index) => item.status === 'fulfilled' ? [{ ...item.value, eventKind: kinds[index] }] : []);
+    const combined = [...loaded, ...failures];
+    const apply = (nextResults) => {
+      const records = nextResults.flatMap((result) => result.events).sort((a, b) => (b.observedAt || '').localeCompare(a.observedAt || ''));
+      setResults(nextResults);
+      setEvents(records);
+      setSelectedId((current) => records.some((event) => event.id === current) ? current : records[0]?.id ?? null);
+    };
+    apply(combined);
     setBusy(false);
-  }, [mode]);
+    const background = loaded.filter((result) => result.refreshPromise);
+    if (background.length) {
+      setRefreshing(true);
+      const refreshed = await Promise.allSettled(background.map((result) => result.refreshPromise));
+      if (!requestGate.current.isCurrent(version)) return;
+      const nextResults = [...combined];
+      refreshed.forEach((item, index) => {
+        const kind = background[index].eventKind;
+        const resultIndex = nextResults.findIndex((result) => result.eventKind === kind);
+        if (resultIndex < 0) return;
+        if (item.status === 'fulfilled') nextResults[resultIndex] = { ...item.value, eventKind: kind };
+        else nextResults[resultIndex] = { ...nextResults[resultIndex], refreshFailed: true, fallbackReason: item.reason?.code || 'NASA_REFRESH_FAILED' };
+      });
+      apply(nextResults);
+      setRefreshing(false);
+      if (refreshed.some((item) => item.status === 'fulfilled')) setUpdatedAt(new Date().toISOString());
+    }
+    if (failures.length || combined.some((result) => result.fallbackReason || result.refreshFailed)) setNotice('Some NASA sources could not refresh. Available cached or archived observations remain labeled by provenance.');
+  }, []);
 
-  useEffect(() => { load(mode); }, [mode, load]);
+  useEffect(() => { load(mode); return () => { requestGate.current.invalidate(); }; }, [mode, load]);
   const selected = events.find((event) => event.id === selectedId) || null;
   const signal = selected ? mapEventToGameSignal(selected) : null;
   const kpData = useMemo(() => (selected?.eventType === 'GST' ? selected.magnitude.filter((item) => item.kind === 'KP_INDEX') : [])
     .map((item) => ({ time: item.observedAt.slice(11, 16), kp: item.value })), [selected]);
-  const modeResult = results.find((result) => result.mode === mode) || results[0];
+  const deliverySummary = [...new Set(results.map((result) => result.delivery).filter(Boolean))].join(' / ');
+  const lastFetchedAt = results.map((result) => result.lastFetchedAt).filter(Boolean).sort().at(-1) ?? null;
+  const hasStaleResults = results.some((result) => result.stale);
 
   return <div className="nasa-view">
     <header className="nasa-page-header">
       <div><p className="section-kicker">DATA INTELLIGENCE / SPACE WEATHER</p><h1>Solar environment</h1><p className="nasa-lede">NASA DONKI observations, presented with source context. Observations are informational and do not trigger simulator effects.</p></div>
       <div className="nasa-toolbar" aria-label="Observation controls">
         <label className="mode-control">DATA MODE <select value={mode} onChange={(event) => setMode(event.target.value)}><option value="LIVE">LIVE</option><option value="REPLAY">REPLAY</option><option value="OFFLINE">OFFLINE</option></select></label>
-        <button className="nasa-refresh" type="button" onClick={() => load(mode, true)} disabled={busy || mode !== 'LIVE'} title={mode === 'LIVE' ? 'Refresh NASA data' : 'Switch to LIVE to refresh'}><RefreshCw size={15} className={busy ? 'spin' : ''} /> Refresh</button>
+        <button className="nasa-refresh" type="button" onClick={() => load(mode, true)} disabled={busy || refreshing || mode !== 'LIVE'} title={mode === 'LIVE' ? 'Refresh NASA data' : 'Switch to LIVE to refresh'}><RefreshCw size={15} className={busy || refreshing ? 'spin' : ''} /> Refresh</button>
       </div>
     </header>
 
     <section className="nasa-status panel" aria-live="polite">
-      <span className={`status-indicator ${mode === 'LIVE' && modeResult?.delivery === 'NASA_LIVE' ? 'is-live' : ''}`}><i /> {mode}</span>
-      <span><Database size={14} /> {modeResult?.delivery?.replaceAll('_', ' ') || 'LOADING OBSERVATIONS'}</span>
-      <span><Clock3 size={14} /> LAST FETCHED {dateLabel(modeResult?.lastFetchedAt).replace(' UTC', '')}</span>
+      <span className={`status-indicator ${mode === 'LIVE' && results.length > 0 && results.every((result) => result.delivery === 'NASA_LIVE') ? 'is-live' : ''}`}><i /> {mode}</span>
+      <span><Database size={14} /> {deliverySummary.replaceAll('_', ' ') || 'LOADING OBSERVATIONS'}</span>
+      <span><Clock3 size={14} /> LAST FETCHED {dateLabel(lastFetchedAt).replace(' UTC', '')}</span>
+      <span className="nasa-refresh-state">{busy ? 'LOADING' : refreshing ? 'REFRESHING CACHED DATA' : updatedAt ? `UPDATED ${dateLabel(updatedAt).replace(' UTC', '')}` : hasStaleResults ? 'STALE CACHE' : 'CURRENT'}</span>
       <span className="nasa-status-note">NASA observations · educational use</span>
     </section>
     {notice && <p className="nasa-notice" role="status">{notice}</p>}
@@ -96,7 +130,7 @@ export function SpaceWeatherView({ onSendSignal = () => {} }) {
           <div className="detail-type"><span>{selected.eventType}</span><small>{labels[selected.eventType] || 'NASA DONKI observation'}</small></div>
           <dl className="detail-fields"><div><dt>OBSERVATION TIME</dt><dd>{dateLabel(selected.observedAt)}</dd></div><div><dt>SUBMITTED</dt><dd>{dateLabel(selected.submittedAt)}</dd></div><div><dt>LOCATION / REGION</dt><dd>{eventSubtitle(selected)}</dd></div><div><dt>VERSION</dt><dd>{selected.versionId ?? 'Not supplied'}</dd></div><div><dt>LINKED EVENTS</dt><dd>{selected.linkedEventIds?.length ? selected.linkedEventIds.join(', ') : 'None listed in this record'}</dd></div></dl>
           {signal && <div className="signal-context"><div><span>GAME CONTEXT · {signal.classification}</span><strong>{signal.title}</strong></div><p>{signal.message}</p><small>{signal.effects}</small><a href={signal.educationalSourceUrl} target="_blank" rel="noreferrer">Scientific context <ArrowUpRight size={12} /></a></div>}
-          {kpData.length > 0 && <div className="kp-chart"><p className="section-kicker">SOURCE Kp INDEX · EARTH GEOMAGNETIC CONTEXT</p><div className="kp-chart-frame"><ResponsiveContainer width="100%" height="100%"><LineChart data={kpData} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}><CartesianGrid stroke="rgba(177,194,224,.09)" vertical={false} /><XAxis dataKey="time" tick={{ fill: '#728198', fontSize: 9 }} axisLine={false} tickLine={false} /><YAxis domain={[0, 9]} ticks={[0, 3, 6, 9]} tick={{ fill: '#728198', fontSize: 9 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ background: '#111927', border: '1px solid #28364a', borderRadius: 6, color: '#e7ebf4' }} /><Line type="monotone" dataKey="kp" name="Kp" stroke="#82d9e8" strokeWidth={2} dot={{ r: 2, fill: '#82d9e8' }} /></LineChart></ResponsiveContainer></div><small>Kp is a source measurement associated with Earth geomagnetic activity, not a lunar surface measurement.</small></div>}
+          {kpData.length > 0 && <Suspense fallback={<p role="status">Loading Kp chart…</p>}><KpChart data={kpData} /></Suspense>}
           <div className="detail-provenance"><span>{provenanceLabel(selected)}</span><small>Retrieved {dateLabel(selected.retrievedAt || selected.provenance?.archivedAt)}</small><a href={selected.sourceUrl} target="_blank" rel="noreferrer">Open NASA source <ArrowUpRight size={13} /></a></div>
         </> : <p className="nasa-empty">Select an observation to inspect its source details.</p>}
       </aside>

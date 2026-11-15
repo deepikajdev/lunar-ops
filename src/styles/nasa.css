@@ -51,6 +51,10 @@
 .kp-chart { margin-top: 15px; }
 .kp-chart-frame { height: 150px; margin-top: 8px; }
 .kp-chart > small { display: block; margin-top: 7px; color: #748197; font-size: 9px; line-height: 1.5; }
+.kp-chart > p { margin: 7px 0; color: #748197; font-size: 9px; line-height: 1.5; }
+.kp-data-table { width: 100%; border-collapse: collapse; color: #9aa8ba; font: 8px var(--mono); }
+.kp-data-table caption { padding: 5px 0; color: #728198; text-align: left; }
+.kp-data-table th,.kp-data-table td { padding: 5px; border-bottom: 1px solid rgba(177,194,224,.07); text-align: left; }
 .detail-provenance { display: grid; justify-items: start; gap: 8px; margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--stroke); }
 .signal-context { display: grid; gap: 7px; margin-top: 13px; padding: 11px; border: 1px solid rgba(120,214,232,.13); border-radius: 6px; background: rgba(58,112,136,.07); }
 .signal-context > div { display: grid; gap: 5px; }.signal-context > div span { color: #88cfe0; font: 7px var(--mono); letter-spacing: .08em; }.signal-context strong { color: #d0dce9; font-size: 10px; }.signal-context p { margin: 0; color: #9ba8ba; font-size: 9px; line-height: 1.55; }.signal-context small { color: #77859a; font-size: 8px; line-height: 1.5; }.signal-context a { display: inline-flex; align-items: center; gap: 3px; color: #89cfe0; font-size: 9px; text-decoration: none; }
