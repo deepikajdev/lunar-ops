@@ -5,6 +5,7 @@ import { CrewHealthPanel } from './CrewHealthPanel.jsx';
 import { DecisionPanel } from './DecisionPanel.jsx';
 import { EquipmentStatusPanel } from './EquipmentStatusPanel.jsx';
 import { MissionLogPanel } from './MissionLogPanel.jsx';
+import { MissionResult } from './MissionResult.jsx';
 import { SimulationResourceGrid } from './SimulationResourceGrid.jsx';
 import '../../styles/simulation.css';
 
@@ -26,7 +27,7 @@ export function SimulationView({ state, dispatch }) {
       </section>
 
       <section className="sim-status-strip" aria-label="Outpost status summary">
-        <div><span className="status-strip-icon green"><ShieldCheck size={15} /></span><span><small>CREW STATUS</small><strong>{state.crew.filter((person) => person.alive).length} / {state.crew.length} SAFE</strong></span></div>
+        <div><span className="status-strip-icon green"><ShieldCheck size={15} /></span><span><small>CREW STATUS</small><strong>{state.crew.filter((person) => person.alive).length} / {state.crew.length} ALIVE</strong></span></div>
         <div><span className="status-strip-icon cyan"><BatteryCharging size={15} /></span><span><small>POWER BUS</small><strong>{state.resources.power.current <= state.resources.power.warningThreshold ? 'LOW RESERVE' : 'ONLINE'}</strong></span></div>
         <div><span className="status-strip-icon amber"><Activity size={15} /></span><span><small>RESOURCE WATCH</small><strong>{warnings ? `${warnings} WARNING${warnings > 1 ? 'S' : ''}` : 'NOMINAL'}</strong></span></div>
         <div><span className="status-strip-icon blue"><RadioTower size={15} /></span><span><small>MISSION LINK</small><strong>{state.continuity}% CONTINUITY</strong></span></div>
@@ -37,7 +38,7 @@ export function SimulationView({ state, dispatch }) {
         <SimulationResourceGrid resources={state.resources} />
       </section>
 
-      {state.status === 'active' ? <div className="sim-action-grid"><DecisionPanel state={state} dispatch={dispatch} /><ActiveEventPanel event={state.activeEvent} selectedDecisionId={state.selectedDecisionId} /></div> : <section className="panel sim-outcome-preview"><p className="section-kicker">MISSION COMPLETE</p><h2>{state.score?.summary}</h2><strong>{state.score?.total ?? 0}<span> / 100</span></strong><button type="button" onClick={() => dispatch({ type: 'restart' })}>Restart scenario</button></section>}
+      {state.status === 'active' ? <div className="sim-action-grid"><DecisionPanel state={state} dispatch={dispatch} /><ActiveEventPanel event={state.activeEvent} selectedDecisionId={state.selectedDecisionId} /></div> : <MissionResult state={state} dispatch={dispatch} />}
 
       <section className="sim-monitor-grid" aria-label="Crew, equipment, and daily mission log">
         <div className="sim-monitor-left"><CrewHealthPanel crew={state.crew} /><EquipmentStatusPanel equipment={state.equipment} /></div>

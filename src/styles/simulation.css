@@ -150,12 +150,43 @@
 .sim-log-copy small { color: #b8c3d2; font-size: 8px; }
 .sim-log-copy p { margin: 0; color: #8290a4; font-size: 8px; line-height: 1.45; }
 .sim-log-response { color: #d1b875; font: 6px var(--mono); letter-spacing: .06em; }
-.sim-outcome-preview { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; margin-top: 16px; padding: 16px 18px; border-color: rgba(128,197,166,.2); }
-.sim-outcome-preview .section-kicker { grid-column: 1/-1; margin: 0; }
-.sim-outcome-preview h2 { margin: 0; color: #cbd7e3; font: 500 12px var(--display); }
-.sim-outcome-preview > strong { color: #93d6bc; font: 600 24px var(--display); }
-.sim-outcome-preview > strong span { color: #8493a8; font: 9px var(--mono); }
-.sim-outcome-preview button { padding: 8px 10px; color: #081219; border: 1px solid rgba(138,220,230,.5); border-radius: 5px; background: linear-gradient(110deg,#8bd7e4,#a3dfcc); font-size: 8px; font-weight: 700; cursor: pointer; }
+.mission-result { margin-top: 16px; padding: 22px; border-color: rgba(128,197,166,.2); }
+.mission-result.outcome-partial { border-color: rgba(216,174,98,.24); }
+.mission-result.outcome-failed { border-color: rgba(206,112,105,.25); }
+.result-intro { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 14px; }
+.result-icon { display: grid; width: 43px; height: 43px; place-items: center; color: #83d2ad; border: 1px solid rgba(116,201,161,.2); border-radius: 11px; background: rgba(78,154,113,.1); }
+.outcome-partial .result-icon { color: #e0bd78; border-color: rgba(216,174,98,.22); background: rgba(168,125,50,.1); }
+.outcome-failed .result-icon { color: #e28d84; border-color: rgba(206,112,105,.23); background: rgba(158,65,60,.1); }
+.result-intro .section-kicker span { color: #59697f; }
+.result-intro h2 { margin: 4px 0; color: #e5ebf4; font: 500 20px var(--display); letter-spacing: -.03em; }
+.result-intro > div:nth-child(2) > p:last-child { max-width: 510px; margin: 0; color: #8795a9; font-size: 9px; line-height: 1.5; }
+.result-score-ring { display: grid; width: 82px; height: 82px; place-items: center; border-radius: 50%; background: conic-gradient(#7acdb1 var(--result-angle), rgba(154,173,203,.12) var(--result-angle)); }
+.outcome-partial .result-score-ring { background: conic-gradient(#dbb76f var(--result-angle), rgba(154,173,203,.12) var(--result-angle)); }
+.outcome-failed .result-score-ring { background: conic-gradient(#d87c75 var(--result-angle), rgba(154,173,203,.12) var(--result-angle)); }
+.result-score-ring > div { display: grid; align-content: center; justify-items: center; width: 69px; height: 69px; border-radius: 50%; background: #111821; }
+.result-score-ring strong { color: #e6edf5; font: 600 22px var(--display); line-height: 1; }
+.result-score-ring small { margin-top: 4px; color: #8391a5; font: 6px var(--mono); letter-spacing: .1em; }
+.result-divider { height: 1px; margin: 19px 0 16px; background: var(--stroke); }
+.result-breakdown-heading { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
+.result-breakdown-heading .section-kicker { margin-bottom: 4px; }
+.result-breakdown-heading h3 { margin: 0; color: #d6dfea; font: 500 13px var(--display); }
+.result-breakdown-heading > span { display: flex; align-items: center; gap: 5px; color: #7e8da2; font: 7px var(--mono); }
+.result-breakdown-heading > span svg { color: #d5b36f; }
+.result-factor { margin-top: 12px; }
+.result-factor-copy { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.result-factor-copy > div { display: grid; gap: 3px; }
+.result-factor-copy strong { color: #bfcbd9; font-size: 9px; font-weight: 600; }
+.result-factor-copy small { color: #77859a; font-size: 8px; }
+.result-factor-copy > span { flex: 0 0 auto; color: #b5c5d6; font: 10px var(--mono); }
+.result-factor-copy > span i { color: #718097; font-size: 8px; font-style: normal; }
+.result-factor-track { height: 3px; overflow: hidden; border-radius: 4px; background: rgba(154,173,203,.1); }
+.result-factor-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#70bfa8,#94d8ca); }
+.outcome-partial .result-factor-track i { background: linear-gradient(90deg,#c29756,#ddc17b); }
+.outcome-failed .result-factor-track i { background: linear-gradient(90deg,#b66061,#d8817b); }
+.result-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; padding-top: 13px; border-top: 1px solid var(--stroke); }
+.result-footer p { max-width: 480px; margin: 0; color: #77859a; font-size: 8px; line-height: 1.5; }
+.result-footer button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 12px; color: #081219; border: 1px solid rgba(138,220,230,.5); border-radius: 5px; background: linear-gradient(110deg,#8bd7e4,#a3dfcc); font-size: 8px; font-weight: 700; cursor: pointer; }
+.result-footer button:hover { filter: brightness(1.08); }
 .sim-disclaimer { display: flex; justify-content: space-between; gap: 12px; margin-top: 17px; color: #5e6a7e; font: 7px var(--mono); letter-spacing: .07em; }
 .sim-disclaimer b { padding: 0 3px; color: #77849a; font-weight: 400; }
 
@@ -207,9 +238,17 @@
   .sim-advance-row { align-items: stretch; flex-direction: column; }
   .sim-risk-note { max-width: none; }
   .sim-advance-button { width: 100%; min-height: 40px; }
-  .sim-outcome-preview { grid-template-columns: 1fr auto; }
-  .sim-outcome-preview h2 { grid-column: 1/-1; }
-  .sim-outcome-preview button { grid-column: 1/-1; }
+  .mission-result { padding: 16px 12px; }
+  .result-intro { grid-template-columns: auto minmax(0,1fr); gap: 10px; }
+  .result-icon { width: 34px; height: 34px; border-radius: 8px; }
+  .result-icon svg { width: 17px; }
+  .result-intro h2 { font-size: 15px; }
+  .result-intro > div:nth-child(2) > p:last-child { font-size: 8px; }
+  .result-score-ring { grid-column: 1/-1; justify-self: center; width: 72px; height: 72px; }
+  .result-score-ring > div { width: 61px; height: 61px; }
+  .result-score-ring strong { font-size: 19px; }
+  .result-footer { align-items: stretch; flex-direction: column; }
+  .result-footer button { min-height: 38px; }
   .sim-crew-panel, .sim-equipment-panel, .sim-event-panel { padding: 14px 12px 12px; }
   .sim-disclaimer { flex-direction: column; gap: 5px; font-size: 6px; }
 }
