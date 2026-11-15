@@ -1,7 +1,7 @@
-import { Activity, Boxes, ChevronDown, Command, FileClock, Gamepad2, LayoutDashboard, Radio, Settings, Shield, Users } from 'lucide-react';
+import { Activity, Boxes, ChevronDown, Command, FileClock, Gamepad2, LayoutDashboard, Radio, Settings, Shield, Users, Orbit } from 'lucide-react';
 
 const items = [
-  { label: 'Overview', icon: LayoutDashboard }, { label: 'Survival sim', icon: Gamepad2 }, { label: 'Life support', icon: Activity },
+  { label: 'Overview', icon: LayoutDashboard }, { label: 'Survival sim', icon: Gamepad2 }, { label: 'NASA Intelligence', icon: Orbit }, { label: 'Life support', icon: Activity },
   { label: 'Crew', icon: Users }, { label: 'Systems', icon: Boxes }, { label: 'Mission log', icon: FileClock },
 ];
 

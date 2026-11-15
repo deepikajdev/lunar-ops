@@ -1,4 +1,4 @@
-import { useReducer, useState } from 'react';
+import { lazy, Suspense, useReducer, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ActivityFeed } from './components/ActivityFeed.jsx';
 import { CrewPanel } from './components/CrewPanel.jsx';
@@ -8,6 +8,7 @@ import { OutpostVisual } from './components/OutpostVisual.jsx';
 import { ResourceCard } from './components/ResourceCard.jsx';
 import { Sidebar } from './components/Sidebar.jsx';
 import { SimulationView } from './components/simulation/SimulationView.jsx';
+const SpaceWeatherView = lazy(() => import('./components/nasa/SpaceWeatherView.jsx').then((module) => ({ default: module.SpaceWeatherView })));
 import { activity, alerts, crew, mission, resources } from './data/simulatedMission.js';
 import { createInitialGameState } from './logic/gameState.js';
 import { simulationReducer } from './logic/engine.js';
@@ -21,7 +22,7 @@ function App() {
     <div className="app-shell">
       <Sidebar activeItem={activeNav} onNavigate={setActiveNav} />
       <main className="main-content">
-        {activeNav === 'Survival sim' ? <SimulationView state={simulation} dispatch={dispatch} /> : <>
+        {activeNav === 'Survival sim' ? <SimulationView state={simulation} dispatch={dispatch} /> : activeNav === 'NASA Intelligence' ? <Suspense fallback={<div className="nasa-loading" role="status">Loading NASA intelligence view…</div>}><SpaceWeatherView /></Suspense> : <>
         <MissionOverview mission={mission} />
         <motion.section className="mission-hero panel" aria-label="Lunar outpost mission overview" variants={appear} initial="hidden" animate="visible">
           <div className="hero-copy">
