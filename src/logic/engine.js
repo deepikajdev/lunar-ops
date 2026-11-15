@@ -1,6 +1,8 @@
 import { GAME_CONFIG } from './gameConfig.js';
 import { getEventForDay } from './events.js';
 import { getDecisionById } from './decisions.js';
+import { createInitialGameState } from './gameState.js';
+import { calculateMissionScore } from './scoring.js';
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -133,5 +135,27 @@ export function advanceDay(state) {
     if (next.activeEvent) next.eventCount += 1;
   }
 
+  if (next.crew.every((person) => !person.alive || person.health <= 0) || next.history.at(-1)?.day === next.maxDays) {
+    next.score = calculateMissionScore(next);
+    next.status = next.score.outcome;
+  }
+
   return next;
+}
+
+export function restartGame(seed = GAME_CONFIG.defaultSeed) {
+  return createInitialGameState(seed);
+}
+
+export function simulationReducer(state, action) {
+  switch (action.type) {
+    case 'select-decision':
+      return selectDecision(state, action.decisionId);
+    case 'advance-day':
+      return advanceDay(state);
+    case 'restart':
+      return restartGame(action.seed ?? state.seed);
+    default:
+      return state;
+  }
 }

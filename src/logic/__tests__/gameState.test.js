@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialGameState } from '../gameState.js';
 import { GAME_CONFIG } from '../gameConfig.js';
-import { advanceDay, canSelectDecision, selectDecision } from '../engine.js';
+import { advanceDay, canSelectDecision, selectDecision, restartGame, simulationReducer } from '../engine.js';
 import { EVENT_CATALOG, getEventForDay } from '../events.js';
 import { DECISION_CATALOG } from '../decisions.js';
+import { calculateMissionScore } from '../scoring.js';
 
 test('initializes a ten-day mission with independent game-balance resources', () => {
   const state = createInitialGameState();
@@ -183,4 +184,53 @@ test('event consequences apply and a compatible choice mitigates the incident', 
   const unmitigated = advanceDay({ ...state, selectedDecisionId: 'balanced_ops' });
   assert.equal(unmitigated.emergencyResponses, 0);
   assert.ok(unmitigated.resources.power.current < addressed.resources.power.current);
+});
+
+test('ten balanced days produce a bounded score breakdown and a terminal outcome', () => {
+  let state = createInitialGameState(441);
+  for (let day = 0; day < 10 && state.status === 'active'; day += 1) {
+    state = { ...state, activeEvent: null };
+    state = advanceDay(state);
+  }
+
+  assert.equal(state.day, 10);
+  assert.ok(['success', 'partial'].includes(state.status));
+  assert.equal(state.score.outcome, state.status);
+  assert.ok(state.score.total >= 0 && state.score.total <= 100);
+  assert.equal(Object.values(state.score.factors).reduce((sum, item) => sum + item.score, 0), state.score.total);
+});
+
+test('mission score distinguishes a strong finish, compromised finish, and crew loss', () => {
+  const strong = createInitialGameState();
+  strong.day = 10;
+  assert.equal(calculateMissionScore(strong).outcome, 'success');
+
+  const compromised = createInitialGameState();
+  compromised.day = 10;
+  compromised.crew[0].alive = false;
+  compromised.crew[0].health = 0;
+  assert.equal(calculateMissionScore(compromised).outcome, 'partial');
+
+  const lost = createInitialGameState();
+  for (const person of lost.crew) { person.health = 0; person.alive = false; }
+  assert.equal(calculateMissionScore(lost).outcome, 'failed');
+});
+
+test('crew loss ends a mission early and restart restores a clean run with the same seed', () => {
+  const state = createInitialGameState(99);
+  state.resources.oxygen.current = 0;
+  state.resources.oxygen.production = 0;
+  state.activeEvent = EVENT_CATALOG.find((event) => event.id === 'oxygen-leak');
+  state.crew = state.crew.map((person) => ({ ...person, health: 1 }));
+  const ended = advanceDay(state);
+  assert.equal(ended.status, 'failed');
+  assert.equal(ended.score.outcome, 'failed');
+
+  const restarted = simulationReducer(ended, { type: 'restart' });
+  assert.equal(restarted.seed, 99);
+  assert.equal(restarted.day, 1);
+  assert.equal(restarted.status, 'active');
+  assert.equal(restarted.history.length, 0);
+  assert.equal(restarted.score, null);
+  assert.ok(restarted.crew.every((person) => person.alive && person.health > 0));
 });
