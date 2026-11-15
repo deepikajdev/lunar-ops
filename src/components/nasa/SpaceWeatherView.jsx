@@ -4,11 +4,13 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { createEventRepository } from '../../nasa/repository.js';
 import { mapEventToGameSignal } from '../../nasa/mappingRules.js';
 import { NASA_REPLAY_SCENARIOS } from '../../nasa/replayScenarios.js';
+import { getCuratedNasaImages } from '../../nasa/imageGallery.js';
 import '../../styles/nasa.css';
 
 const kinds = ['cme', 'gst', 'sep', 'ips'];
 const labels = { CME: 'Coronal mass ejection', GST: 'Geomagnetic storm', SEP: 'Solar energetic particles', IPS: 'Interplanetary shock' };
 const repository = createEventRepository();
+const curatedImages = getCuratedNasaImages();
 
 function dateLabel(value) {
   if (!value) return 'Timestamp not supplied';
@@ -99,6 +101,7 @@ export function SpaceWeatherView({ onSendSignal = () => {} }) {
       </aside>
     </div>
     <section className="nasa-scenarios" aria-labelledby="scenario-title"><div className="panel-heading"><div><p className="section-kicker">VERIFIED NASA ARCHIVE · MAY 2024</p><h2 id="scenario-title">Replay a context briefing</h2></div><span className="nasa-count">3 ARCHIVED EVENTS</span></div><p>Choose a verified archived observation to attach a source-linked briefing to the survival simulator. The observation will not change game resources, health, or equipment.</p><div className="scenario-grid">{NASA_REPLAY_SCENARIOS.map((scenario) => <article className="panel scenario-card" key={scenario.id}><span>{scenario.signal.classification} CONTEXT</span><h3>{scenario.title}</h3><p>{scenario.description}</p><small>{scenario.eventId}</small><button type="button" onClick={() => onSendSignal(scenario.signal)}>Send context to Survival sim</button></article>)}</div></section>
+    <section className="nasa-gallery" aria-labelledby="gallery-title"><div className="panel-heading"><div><p className="section-kicker">NASA IMAGE AND VIDEO LIBRARY · CAPTURED SEARCH</p><h2 id="gallery-title">Lunar exploration gallery</h2></div><a href="https://images.nasa.gov/" target="_blank" rel="noreferrer">NASA Images <ArrowUpRight size={13} /></a></div><p>Curated from the genuine “lunar outpost” NASA Images response captured for M0. Credits and source records are shown with every item.</p><div className="gallery-grid">{curatedImages.map((item) => <article className="panel gallery-card" key={item.nasaId}><a className="gallery-image-link" href={item.sourceUrl} target="_blank" rel="noreferrer"><img src={item.imageUrl} alt={item.title} loading="lazy" /><span>{item.mediaType.toUpperCase()}</span></a><div className="gallery-copy"><h3>{item.title}</h3><p>{item.description}</p><small>Credit: {item.credit}{item.dateCreated ? ` · ${item.dateCreated.slice(0, 10)}` : ''}</small><a href={item.sourceUrl} target="_blank" rel="noreferrer">View NASA source <ArrowUpRight size={12} /></a></div></article>)}</div></section>
     <footer className="nasa-attribution">Data source: <a href="https://api.nasa.gov/" target="_blank" rel="noreferrer">NASA Open APIs · DONKI</a>. NASA does not endorse LUNAR OPS. Space weather observations are not direct measurements of outpost equipment conditions.</footer>
   </div>;
 }
